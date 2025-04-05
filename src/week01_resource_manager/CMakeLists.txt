@@ -1,0 +1,1 @@
+add_executable(resource_manager main.cpp)
