@@ -40,12 +40,12 @@ The curriculum is project-driven and focuses on core systems topics such as:
 
 ### Key Systems I’ll Be Building
 
-- 🔸 `ResourceManager<T>` — Ownership, RAII, and rollback safety
-- 🔸 `ECS Runtime` — SoA data layout, component iteration, system scheduler
-- 🔸 `Job System` — Thread pool, lock-free queues, task graph with fibers
-- 🔸 `Custom Allocator` — Arena allocator with diagnostics
-- 🔸 `Instrumentation Layer` — In-engine profiling with Tracy
-- 🔸 `Plugin Runtime` — Modular loadable systems and hot-reloadable symbols
+- `ResourceManager<T>` — Ownership, RAII, and rollback safety
+- `ECS Runtime` — SoA data layout, component iteration, system scheduler
+- `Job System` — Thread pool, lock-free queues, task graph with fibers
+- `Custom Allocator` — Arena allocator with diagnostics
+- `Instrumentation Layer` — In-engine profiling with Tracy
+- `Plugin Runtime` — Modular loadable systems and hot-reloadable symbols
 
 ---
 
