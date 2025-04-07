@@ -1,21 +1,19 @@
 #pragma once
 
-#include <unordered_map>
-#include <string>
-#include <memory>
 #include <functional>
+#include <memory>
+#include <string>
+#include <unordered_map>
 
 template <typename T>
-class ResourceManager
-{
-public:
+class ResourceManager {
+ public:
   ResourceManager() = default;
 
-  std::shared_ptr<T> load(const std::string &name, std::function<std::shared_ptr<T>()> loader)
-  {
+  std::shared_ptr<T> load(const std::string &name, std::function<std::shared_ptr<T>()> loader) {
     auto found = resources_.find(name);
-    if (found != resources_.end())
-    {
+
+    if (found != resources_.end()) {
       return found->second;
     }
     auto loaded = loader();
@@ -23,20 +21,22 @@ public:
     return loaded;
   }
 
-  std::shared_ptr<T> get(const std::string &name) const
-  {
+  std::shared_ptr<T> get(const std::string &name) const {
     auto found = resources_.find(name);
-    if (found == resources_.end())
-    {
+    if (found == resources_.end()) {
       return std::shared_ptr<T>{};
     }
     return found->second;
-  };
+  }
 
-  void unload(const std::string &name) {};
+  void unload(const std::string &name) {
+    resources_.erase(name);
+  }
 
-  void clear() {};
+  void clear() {
+    resources_.clear();
+  }
 
-private:
+ private:
   std::unordered_map<std::string, std::shared_ptr<T>> resources_;
 };
