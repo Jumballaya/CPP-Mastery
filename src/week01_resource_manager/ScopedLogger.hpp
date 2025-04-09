@@ -1,7 +1,6 @@
 #pragma once
 
 #include <iostream>
-#include <string>
 #include <string_view>
 
 class ScopedLogger {
@@ -30,7 +29,7 @@ class ScopedLogger {
   };
 
  private:
-  const std::string _label;
+  const std::string_view _label;
   bool logging = true;
   bool _enabled = true;
 };
