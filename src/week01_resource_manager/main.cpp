@@ -3,9 +3,10 @@
 #include <string>
 
 #include "ResourceManager.hpp"
+#include "ScopedGuard.hpp"
 #include "ScopedLogger.hpp"
 
-#define LOGGING_ENABLED false
+#define LOGGING_ENABLED true
 
 int main() {
   ScopedLogger log_main("Main Block", LOGGING_ENABLED);
@@ -17,7 +18,10 @@ int main() {
   manager.unload("greeting");
   log_resource_building.end();
 
-  manager.clear();
+  ScopeGuard defer([&]() {
+    std::cout << "Clearing Manager" << std::endl;
+    manager.clear();
+  });
 
   ScopedLogger log_resource_display("Resource Display", LOGGING_ENABLED);
   auto val = manager.get("greeting");
