@@ -1,0 +1,1 @@
+add_executable(tracked_object main.cpp)
