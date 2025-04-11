@@ -2,6 +2,7 @@
 #include <memory>
 #include <string>
 
+#include "MoveOnlyBuffer.hpp"
 #include "MoveOnlyResourceManager.hpp"
 #include "ResourceManager.hpp"
 #include "ScopedGuard.hpp"
@@ -95,6 +96,31 @@ void demo_5_move_only_resource_manager() {
   if (val) std::cout << **val;
 }
 
+void demo_6_move_only_buffer() {
+  MoveOnlyResourceManager<MoveOnlyBuffer> manager;
+  MoveOnlyBuffer buffer(6);
+
+  buffer.write(0, 'H');
+  buffer.write(1, 'E');
+  buffer.write(2, 'L');
+  buffer.write(3, 'L');
+  buffer.write(4, 'O');
+  buffer.write(5, '\n');
+
+  manager.load("greeting", std::move(buffer));
+
+  const MoveOnlyBuffer* result = manager.get("greeting");
+  if (!result) {
+    std::cout << "Greeting not found" << std::endl;
+    return;
+  }
+
+  for (size_t i = 0; i < 6; i++) {
+    std::cout << result->read(i);
+  }
+  std::cout << std::endl;
+}
+
 int main() {
-  demo_5_move_only_resource_manager();
+  demo_6_move_only_buffer();
 }
