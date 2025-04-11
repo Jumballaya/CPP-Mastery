@@ -2,6 +2,7 @@
 #include <memory>
 #include <string>
 
+#include "MoveOnlyResourceManager.hpp"
 #include "ResourceManager.hpp"
 #include "ScopedGuard.hpp"
 #include "ScopedLogger.hpp"
@@ -86,6 +87,14 @@ void demo_4_scoped_timer() {
   }
 }
 
+void demo_5_move_only_resource_manager() {
+  MoveOnlyResourceManager<std::unique_ptr<std::string>> manager;
+  manager.load("greeting", std::make_unique<std::string>("Hello World\n"));
+
+  auto* val = manager.get("greeting");
+  if (val) std::cout << **val;
+}
+
 int main() {
-  demo_4_scoped_timer();
+  demo_5_move_only_resource_manager();
 }
