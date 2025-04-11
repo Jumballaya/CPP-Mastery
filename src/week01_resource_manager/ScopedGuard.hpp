@@ -2,19 +2,19 @@
 #include <functional>
 
 template <typename F>
-class ScopeGuard {
+class ScopedGuard {
  public:
-  ScopeGuard(F&& deferred) : _deferred(std::forward<F>(deferred)) {}
+  ScopedGuard(F&& deferred) : _deferred(std::forward<F>(deferred)) {}
 
-  ~ScopeGuard() {
+  ~ScopedGuard() {
     if (!_dismissed) {
       _deferred();
     }
   }
 
   // Can't copy/assign
-  ScopeGuard(const ScopeGuard&) = delete;
-  ScopeGuard& operator=(const ScopeGuard&) = delete;
+  ScopedGuard(const ScopedGuard&) = delete;
+  ScopedGuard& operator=(const ScopedGuard&) = delete;
 
   void dismiss() {
     _dismissed = true;

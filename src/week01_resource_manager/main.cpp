@@ -60,7 +60,7 @@ void demo_3_scoped_guard() {
   manager.unload("greeting");
   log_resource_building.end();
 
-  ScopeGuard defer([&]() {
+  ScopedGuard defer([&]() {
     std::cout << "Clearing Manager" << std::endl;
     manager.clear();
   });
