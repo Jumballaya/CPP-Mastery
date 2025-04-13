@@ -1,60 +1,18 @@
 #pragma once
 #include <cstddef>
+#include <cstring>
+#include <iomanip>
 #include <iostream>
 
-//
-//    FOR MONDAY:
-//
-//    1. add _capacity and _size
-//        a. capacity: total bytes alloc | size: how many bytes in use
-//    2. write() should update size if written to a place past current size
-//        a. e.g. if size is 3 and .write(6, 'f') is called, the size is 7 (indices 0->6)
-//        b. if clear() is called, reset size to 0, but keep the alloc'd memory
-//    3. resize(size_t newCapacity) added
-//        a. if newCapacity > capacity then alloc new memory and memcpy old contents
-//        b. zero out new memory if expanding
-//        c. update capacity
-//    4. append(const char* data, size_t len)
-//        a. append len bytes to after _size
-//        b. expands via resize() if needed
-//        c. returns true if append succeeded
-//        d. returns false if it would exceed a MAX_CAPACITY set outside the class
-//    5. Type safe read/write
-//
-//            template <typename T>
-//            void write(size_t offset, const T& value);
-//
-//            template <typename T>
-//            T read(size_t offset) const;
-//
-//        a. write uses std::memcpy
-//        b. Read returns a copy of the value at that offset
-//        c. Include bounds checking (offset + sizeof(T) must fit)
-//        d. Add static_assert on trivially copyable types
-//        e. Bonus: add a read_into<T>(size_t offset, T& out) to avoid copies
-//    6. Clear method
-//        a. void clear()
-//        b. Resets _size = 0
-//        c. Leaves _capacity untouched (no dealloc)
-//        d. Optionally zero memory if a flag is set
-//    7. Debug Output
-//        a. friend std::ostream& operator<<(std::ostream& os, const MoveOnlyBuffer& buf);
-//        b. Example output:
-//            i. MoveOnlyBuffer(size=6, capacity=32): [48 45 4C 4C 4F 0A]
-//        c. Use hex or ASCII view
-//        d. Print size and capacity
-//
-//
-//
+constexpr size_t MAX_CAPACITY = 0xFFFFFFFFFFFF;
 
 struct MoveOnlyBuffer {
-  MoveOnlyBuffer(size_t size) : _size(size) {
-    data = new char[size];
-    std::fill(data, data + size, 0);
+  MoveOnlyBuffer(size_t capacity) : _capacity(capacity), _data(new char[capacity]) {
+    std::fill(_data, _data + capacity, 0);
   }
 
   ~MoveOnlyBuffer() {
-    delete[] data;
+    delete[] _data;
   }
 
   // Copy Constructor/Assignment
@@ -63,34 +21,88 @@ struct MoveOnlyBuffer {
 
   // Move Constructor/Assignment
   MoveOnlyBuffer(MoveOnlyBuffer&& other) noexcept
-      : data(other.data), _size(other._size) {
-    other.data = nullptr;
+      : _data(other._data), _capacity(other._capacity), _size(other._size) {
+    other._data = nullptr;
+    other._capacity = 0;
     other._size = 0;
   };
 
   MoveOnlyBuffer& operator=(MoveOnlyBuffer&& other) noexcept {
     if (this == &other) return *this;
-    delete[] data;
-    data = other.data;
+    delete[] _data;
+    _data = other._data;
+    _capacity = other._capacity;
     _size = other._size;
-    other.data = nullptr;
+    other._data = nullptr;
+    other._capacity = 0;
     other._size = 0;
     return *this;
   };
 
-  void write(size_t index, char value) {
-    if (_size == 0) return;
-    if (index >= _size) return;
-    data[index] = value;
+  friend std::ostream& operator<<(std::ostream& os, const MoveOnlyBuffer& buf) {
+    os << "MoveOnlyBuffer(size=" << buf._size
+       << ", capacity=" << buf._capacity << "): [";
+
+    for (size_t i = 0; i < buf._size; i++) {
+      if (i != 0) os << ' ';
+      os << "0x" << std::hex << std::uppercase << std::setw(2) << std::setfill('0')
+         << static_cast<int>(static_cast<unsigned char>(buf._data[i]));
+    }
+
+    os << std::dec << std::nouppercase << "]";
+    return os;
+  }
+
+  size_t size() {
+    return _size;
+  }
+
+  template <typename T>
+  void write(size_t index, const T& value) {
+    if (_capacity == 0) return;
+    if (index + sizeof(T) >= _capacity) return;
+    std::memcpy(_data + index, &value, sizeof(T));
+    if (index + sizeof(T) >= _size) {
+      _size = index + sizeof(T);
+    }
   };
 
-  char read(size_t index) const {
-    if (_size == 0) return '\0';
-    if (index >= _size) return '\0';
-    return data[index];
+  template <typename T>
+  T* read(size_t index) const {
+    if (_capacity == 0) return nullptr;
+    if (index >= _capacity) return nullptr;
+    return (T*)(_data + index);
   };
+
+  void clear() {
+    std::fill(_data, _data + _capacity, 0);
+    _size = 0;
+  }
+
+  bool resize(size_t newCapacity) {
+    if (newCapacity <= _capacity) return false;
+    char* newData = new char[newCapacity];
+    if (newData == nullptr) return false;
+    std::fill(newData, newData + newCapacity, 0);
+    std::memcpy(newData, _data, _capacity);
+    _capacity = newCapacity;
+    delete[] _data;
+    _data = newData;
+    return true;
+  }
+
+  bool append(const char* data, size_t len) {
+    if (len == 0 || !data || _size + len > MAX_CAPACITY) return false;
+    if (_size + len >= _capacity) {
+      resize(std::max(_size * 2, _size + len));
+    }
+    std::memcpy(_data + _size, data, len);
+    _size += len;
+    return true;
+  }
 
  private:
-  char* data = nullptr;
+  char* _data = nullptr;
   size_t _size = 0;
+  size_t _capacity = 0;
 };

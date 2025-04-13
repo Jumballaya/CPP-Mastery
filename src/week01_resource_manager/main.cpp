@@ -100,12 +100,12 @@ void demo_6_move_only_buffer() {
   MoveOnlyResourceManager<MoveOnlyBuffer> manager;
   MoveOnlyBuffer buffer(6);
 
-  buffer.write(0, 'H');
-  buffer.write(1, 'E');
-  buffer.write(2, 'L');
-  buffer.write(3, 'L');
-  buffer.write(4, 'O');
-  buffer.write(5, '\n');
+  buffer.write<char>(0, 'H');
+  buffer.write<char>(1, 'E');
+  buffer.write<char>(2, 'L');
+  buffer.write<char>(3, 'L');
+  buffer.write<char>(4, 'O');
+  buffer.write<char>(5, '\n');
 
   manager.load("greeting", std::move(buffer));
 
@@ -115,12 +115,23 @@ void demo_6_move_only_buffer() {
     return;
   }
 
-  for (size_t i = 0; i < 6; i++) {
-    std::cout << result->read(i);
-  }
+  std::cout << result->read<char>(0);
   std::cout << std::endl;
 }
 
+void demo_7_move_only_buffer_enhanced() {
+  MoveOnlyBuffer buffer(10);
+  std::string text = "Hello!";
+  std::string text2 = " more text!";
+  std::string text3 = " bit more";
+  buffer.append(text.c_str(), text.size());
+  buffer.append(text2.c_str(), text2.size());
+  buffer.append(text3.c_str(), text3.size());
+  std::string_view view(buffer.read<char>(0), buffer.size());
+  std::cout << view << std::endl;
+  std::cout << buffer << std::endl;
+}
+
 int main() {
-  demo_6_move_only_buffer();
+  demo_7_move_only_buffer_enhanced();
 }
