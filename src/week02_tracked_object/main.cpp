@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <iostream>
 
+#include "ComponentRegistry.hpp"
 #include "EntityContainer.hpp"
 #include "OwningHandle.hpp"
 #include "TrackedBuffer.hpp"
@@ -183,6 +184,20 @@ void demo_11_entity_system() {
   TrackedObject::print_stats();
 }
 
+void demo_12_component_registry() {
+  ComponentRegistry registry;
+
+  registry.register_component("Health", TrackedComponent("Health", "HP", 100));
+  registry.register_component("Mana", TrackedComponent("Mana", "MP", 50));
+  registry.register_component("Strength", TrackedComponent("Strength", "STR", 10));
+
+  auto cpy = registry.get_copy("Health");
+  auto cpy2 = registry.get_copy("Mana");
+
+  registry.print_all();
+  TrackedObject::print_stats();
+}
+
 int main() {
-  demo_11_entity_system();
+  demo_12_component_registry();
 }

@@ -15,6 +15,10 @@ class TrackedPayload : public TrackedObject {
     std::cout << "[ " << _name << " ] initialized with <" << _data.size() << "> elements" << std::endl;
   }
 
+  size_t size() const {
+    return _data.size();
+  }
+
  private:
   std::vector<int> _data;
 };
