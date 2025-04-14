@@ -5,6 +5,7 @@
 #include "TrackedBuffer.hpp"
 #include "TrackedObject.hpp"
 #include "TrackedPayload.hpp"
+#include "TrackedVector.hpp"
 
 TrackedObject track_value(TrackedObject to) {
   std::cout << "[Function] - By Value" << std::endl;
@@ -101,6 +102,32 @@ void demo_7_tracked_buffer() {
   std::cout << buffer << std::endl;
 }
 
+void demo_8_tracked_vector() {
+  std::cout << "\n--- Creating v1 ---\n";
+  TrackedVector<TrackedPayload> v1;
+  v1.push_back(TrackedPayload("One", 5));
+  v1.push_back(TrackedPayload("Two", 10));
+
+  std::cout << "\n--- Copy constructing v2 from v1 ---\n";
+  TrackedVector<TrackedPayload> v2 = v1;
+
+  std::cout << "\n--- Move constructing v3 from v1 ---\n";
+  TrackedVector<TrackedPayload> v3 = std::move(v1);
+
+  std::cout << "\n--- Copy assigning v4 = v2 ---\n";
+  TrackedVector<TrackedPayload> v4;
+  v4 = v2;
+
+  std::cout << "\n--- Move assigning v5 = std::move(v3) ---\n";
+  TrackedVector<TrackedPayload> v5;
+  v5 = std::move(v3);
+
+  std::cout << "\n--- Clearing v5 ---\n";
+  v5.clear();
+
+  std::cout << "\n--- End of demo_3_tracked_vector ---\n";
+}
+
 int main() {
-  demo_7_tracked_buffer();
+  demo_8_tracked_vector();
 }
