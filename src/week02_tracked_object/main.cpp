@@ -128,6 +128,35 @@ void demo_8_tracked_vector() {
   std::cout << "\n--- End of demo_3_tracked_vector ---\n";
 }
 
+void process_by_copy(TrackedPayload pl) {
+  std::cout << "Process By Copy" << std::endl;
+  TrackedVector<TrackedPayload> v1;
+  v1.push_back(pl);
+}
+
+void process_by_move(TrackedPayload&& pl) {
+  std::cout << "Process By Move" << std::endl;
+  TrackedVector<TrackedPayload> v1;
+  v1.push_back(std::move(pl));
+  TrackedPayload cpy = std::move(pl);
+  v1.push_back(cpy);
+}
+
+void process_by_ref(const TrackedPayload& pl) {
+  std::cout << "Process By Ref" << std::endl;
+  TrackedVector<TrackedPayload> v1;
+  v1.push_back(pl);
+}
+
+void demo_9_tradeoffs() {
+  TrackedPayload original("original", 1000);
+  process_by_copy(original);
+  process_by_move(std::move(original));
+  process_by_ref(original);
+
+  TrackedObject::print_stats();
+}
+
 int main() {
-  demo_8_tracked_vector();
+  demo_9_tradeoffs();
 }
