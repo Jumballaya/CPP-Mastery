@@ -8,8 +8,11 @@
 
 class TrackedPayload : public TrackedObject {
  public:
+  TrackedPayload() : TrackedObject("default"), _data{} {
+    std::cout << "[ " << _name << " ] initialized with <" << _data.size() << "> elements" << std::endl;
+  }
   TrackedPayload(std::string_view name, int size) : TrackedObject(name), _data(size, 42) {
-    std::cout << "[ " << name << " ] initialized with <" << size << "> elements" << std::endl;
+    std::cout << "[ " << _name << " ] initialized with <" << _data.size() << "> elements" << std::endl;
   }
 
  private:
