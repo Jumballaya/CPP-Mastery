@@ -1,8 +1,10 @@
 #include <algorithm>
 #include <iostream>
 
+#include "EntityContainer.hpp"
 #include "OwningHandle.hpp"
 #include "TrackedBuffer.hpp"
+#include "TrackedComponent.hpp"
 #include "TrackedObject.hpp"
 #include "TrackedPayload.hpp"
 #include "TrackedVector.hpp"
@@ -157,6 +159,30 @@ void demo_9_tradeoffs() {
   TrackedObject::print_stats();
 }
 
+void demo_10_tracked_component() {
+  TrackedComponent tc1;
+  TrackedComponent tc2("New Component", TrackedPayload("New Payload", 10));
+  TrackedComponent tc3("New Component 2", "New Payload 2", 20);
+  TrackedObject::print_stats();
+}
+
+void demo_11_entity_system() {
+  EntityContainer<TrackedComponent> container;
+
+  container.add(std::move(TrackedComponent("Health", "HP", 100)));
+  container.add(std::move(TrackedComponent("Mana", "MP", 200)));
+  container.add(std::move(TrackedComponent("Strength", "STR", 10)));
+  container.add(std::move(TrackedComponent("Stamina", "STA", 10)));
+  container.add(std::move(TrackedComponent("Dexterity", "DEX", 10)));
+  container.add(std::move(TrackedComponent("Intelligence", "INT", 10)));
+  container.add(std::move(TrackedComponent("Wisdom", "WIS", 10)));
+  container.add(std::move(TrackedComponent("Charisma", "CHA", 10)));
+
+  container.remove(0);
+
+  TrackedObject::print_stats();
+}
+
 int main() {
-  demo_9_tradeoffs();
+  demo_11_entity_system();
 }
