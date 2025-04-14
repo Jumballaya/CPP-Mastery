@@ -1,9 +1,10 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <string_view>
 
 struct TrackedObject {
-  TrackedObject(std::string name) : _name(name) {
+  TrackedObject(std::string_view name) : _name(name) {
     std::cout << "[ " << name << " ] : Constructed" << std::endl;
     ++constructed;
   };

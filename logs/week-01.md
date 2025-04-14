@@ -1,3 +1,7 @@
+## Theme of the week
+
+RAII and object ownership
+
 ## What did I learn?
 
 - Templates are powerful and can help reduce allocations, but can also increase overhead due to dynamic dispatch and virtual table lookup.

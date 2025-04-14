@@ -8,7 +8,7 @@
 
 class TrackedPayload : public TrackedObject {
  public:
-  TrackedPayload(std::string name, int size) : TrackedObject(name), _data(size, 42) {
+  TrackedPayload(std::string_view name, int size) : TrackedObject(name), _data(size, 42) {
     std::cout << "[ " << name << " ] initialized with <" << size << "> elements" << std::endl;
   }
 
