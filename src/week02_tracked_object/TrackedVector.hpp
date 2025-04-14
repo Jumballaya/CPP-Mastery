@@ -1,6 +1,5 @@
 #pragma once
 #include <cstddef>
-#include <cstring>
 #include <iostream>
 
 template <typename T>
@@ -22,7 +21,10 @@ class TrackedVector {
   TrackedVector(const TrackedVector& other) noexcept : _capacity(other._capacity), _size(other._size), _data(new T[other._capacity]) {
     if (this == &other) return;
     std::cout << "[Vector] Copy Constructor Called" << std::endl;
-    std::memcpy(_data, other._data, _capacity);
+    _data = new T[_capacity];
+    for (size_t i = 0; i < _size; i++) {
+      _data[i] = other._data[i];
+    }
   }
 
   TrackedVector(TrackedVector&& other) noexcept : _capacity(other._capacity), _size(other._size), _data(other._data) {
