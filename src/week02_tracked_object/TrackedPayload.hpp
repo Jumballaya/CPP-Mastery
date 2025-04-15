@@ -19,6 +19,10 @@ class TrackedPayload : public TrackedObject {
     return _data.size();
   }
 
+  void resize(size_t s) {
+    _data.resize(s);
+  }
+
  private:
   std::vector<int> _data;
 };

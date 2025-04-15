@@ -15,12 +15,12 @@ struct TrackedObject {
 
   // Copy/Assign Copy
   TrackedObject(const TrackedObject& other) {
-    std::cout << "[ " << other._name << " ] : Copied to : [" << _name << " ]" << std::endl;
+    std::cout << "[ " << other._name << " ] : Copied() to : [ " << _name << " ]" << std::endl;
     ++copied;
   };
   TrackedObject& operator=(const TrackedObject& other) {
     if (this != &other) {
-      std::cout << "[ " << other._name << " ] : Copied to New : [" << _name << " ]" << std::endl;
+      std::cout << "[ " << other._name << " ] : Copied= to : [ " << _name << " ]" << std::endl;
       _name = "copy_assigned_" + other._name;
       ++copy_assigned;
     }
@@ -29,12 +29,12 @@ struct TrackedObject {
 
   // Move/Assign Move
   TrackedObject(TrackedObject&& other) noexcept {
-    std::cout << "[ " << other._name << " ] : Moved to : [" << _name << " ]" << std::endl;
+    std::cout << "[ " << other._name << " ] : Moved() to : [ " << _name << " ]" << std::endl;
     ++moved;
   };
   TrackedObject& operator=(TrackedObject&& other) noexcept {
     if (this != &other) {
-      std::cout << "[ " << other._name << " ] : Moved to New : [" << _name << " ]" << std::endl;
+      std::cout << "[ " << other._name << " ] : Moved= to : [ " << _name << " ]" << std::endl;
       _name = std::move(other._name);
       ++move_assigned;
     }

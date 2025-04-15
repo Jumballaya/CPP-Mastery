@@ -1,0 +1,1 @@
+add_executable(scoped_transaction main.cpp)
