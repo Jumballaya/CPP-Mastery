@@ -4,6 +4,7 @@
 #include "../week02_tracked_object/TrackedPayload.hpp"
 #include "RollbackStack.hpp"
 #include "ScopedTransaction.hpp"
+#include "TransactionGroup.hpp"
 #include "UndoableComponent.hpp"
 #include "UndoableEntity.hpp"
 #include "UndoableRegistry.hpp"
@@ -182,6 +183,59 @@ void demo_7_undoable_entity() {
   TrackedObject::print_stats();
 }
 
+void demo_8_transaction_group() {
+  std::cout << "\n--- Demo 8: TransactionGroup ---" << std::endl;
+
+  TrackedPayload hp("HP", 100);
+  TrackedPayload mp("MP", 50);
+  TrackedPayload stamina("STA", 25);
+
+  std::cout << "Before Group: HP=" << hp.size()
+            << ", MP=" << mp.size()
+            << ", STA=" << stamina.size() << std::endl;
+
+  {
+    TransactionGroup<TrackedPayload> group;
+    group.add(hp);
+    group.add(mp);
+    group.add(stamina);
+
+    group.get(0).resize(125);  // HP
+    group.get(1).resize(75);   // MP
+    group.get(2).resize(40);   // STA
+
+    std::cout << "Within Group (Uncommitted): "
+              << "HP=" << group.get(0).size()
+              << ", MP=" << group.get(1).size()
+              << ", STA=" << group.get(2).size() << std::endl;
+
+    group.commitAll();
+  }
+
+  std::cout << "After Commit: HP=" << hp.size()
+            << ", MP=" << mp.size()
+            << ", STA=" << stamina.size() << std::endl;
+
+  {
+    TransactionGroup<TrackedPayload> rollbackGroup;
+    rollbackGroup.add(hp);
+    rollbackGroup.add(mp);
+
+    rollbackGroup.get(0).resize(999);
+    rollbackGroup.get(1).resize(999);
+
+    std::cout << "Before Rollback: HP=" << rollbackGroup.get(0).size()
+              << ", MP=" << rollbackGroup.get(1).size() << std::endl;
+
+    // No call to commit_all() — triggers rollback
+  }
+
+  std::cout << "After Rollback: HP=" << hp.size()
+            << ", MP=" << mp.size() << std::endl;
+
+  TrackedObject::print_stats();
+}
+
 int main() {
-  demo_7_undoable_entity();
+  demo_8_transaction_group();
 }

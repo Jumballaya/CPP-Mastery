@@ -6,6 +6,7 @@ class ScopedTransaction {
   ScopedTransaction(T& ref) : _ref(ref), _copy(ref) {}
 
   ~ScopedTransaction() {}
+
   ScopedTransaction(const ScopedTransaction& other) noexcept = delete;
   ScopedTransaction(ScopedTransaction&& other) noexcept = delete;
   ScopedTransaction& operator=(const ScopedTransaction& other) noexcept = delete;
