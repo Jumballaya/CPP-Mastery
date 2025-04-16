@@ -110,10 +110,29 @@ void demo_6_undoable_registry() {
   UndoableRegistry<TrackedPayload> registry;
 
   registry.edit("Health").resize(100);
+  std::cout << "Resize Health to 100, committed: " << registry.get("Health")->size() << std::endl;
   registry.commit("Health");
+  std::cout << "Commit Health to: " << registry.get("Health")->size() << std::endl;
 
   registry.edit("Mana").resize(50);
+  std::cout << "Resize Mana to 50, committed: " << registry.get("Mana")->size() << std::endl;
   registry.undo("Mana");
+  std::cout << "Undo Mana to: " << registry.get("Mana")->size() << std::endl;
+  registry.edit("Mana").resize(200);
+  std::cout << "Resize Mana to 200, committed: " << registry.get("Mana")->size() << std::endl;
+  registry.commit("Mana");
+  std::cout << "Commit Mana to: " << registry.get("Mana")->size() << std::endl;
+
+  registry.edit("Strength").resize(10);
+  std::cout << "Resize Strength to 10, committed: " << registry.get("Strength")->size() << std::endl;
+  registry.commit("Strength");
+  std::cout << "Commit Strength to: " << registry.get("Strength")->size() << std::endl;
+  registry.edit("Strength").resize(50);
+  std::cout << "Resize Strength to 50, committed: " << registry.get("Strength")->size() << std::endl;
+  registry.commit("Strength");
+  std::cout << "Commit Strength to: " << registry.get("Strength")->size() << std::endl;
+
+  TrackedObject::print_stats();
 }
 
 int main() {

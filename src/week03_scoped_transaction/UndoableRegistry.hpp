@@ -34,7 +34,7 @@ class UndoableRegistry {
   const T* get(std::string_view name) const {
     auto it = _registry.find(std::string(name));
     if (it == _registry.end()) return nullptr;
-    return &it->second.undo();
+    return &it->second.value();
   }
 
  private:
