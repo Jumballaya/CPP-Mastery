@@ -5,6 +5,7 @@
 #include "RollbackStack.hpp"
 #include "ScopedTransaction.hpp"
 #include "UndoableComponent.hpp"
+#include "UndoableRegistry.hpp"
 
 void demo_1_scoped_transaction() {
   TrackedPayload health("HP", 100);
@@ -105,6 +106,16 @@ void demo_5_rollback_stack_undoable_component() {
   std::cout << "Stack Top: " << stack.current().value() << std::endl;
 }
 
+void demo_6_undoable_registry() {
+  UndoableRegistry<TrackedPayload> registry;
+
+  registry.edit("Health").resize(100);
+  registry.commit("Health");
+
+  registry.edit("Mana").resize(50);
+  registry.undo("Mana");
+}
+
 int main() {
-  demo_5_rollback_stack_undoable_component();
+  demo_6_undoable_registry();
 }
