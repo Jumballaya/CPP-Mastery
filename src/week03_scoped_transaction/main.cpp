@@ -1,6 +1,8 @@
 #include <iostream>
 
+#include "../week01_resource_manager/MoveOnlyBuffer.hpp"
 #include "../week02_tracked_object/TrackedPayload.hpp"
+#include "RollbackStack.hpp"
 #include "ScopedTransaction.hpp"
 #include "UndoableComponent.hpp"
 
@@ -58,6 +60,51 @@ void demo_3_undoable_component() {
   std::cout << "Finale Size: " << hp.value().size() << std::endl;
 }
 
+void demo_4_rollback_stack() {
+  std::vector<std::string> words = {
+      "Hello",
+      "World",
+      "Apple",
+      "Brown",
+      "Limes",
+      "Grape",
+      "Short",
+      "Brain",
+      "Crabs",
+      "Mount"};
+
+  RollbackStack<MoveOnlyBuffer> stack;
+  for (auto word : words) {
+    MoveOnlyBuffer hello(5);
+    hello.append(word.c_str(), 5);
+    stack.push(std::move(hello));
+  }
+  std::cout << "Stack Top: " << stack.current().read<char>(0) << std::endl;
+  while (stack.pop()) {
+    std::cout << "Stack Top: " << stack.current().read<char>(0) << std::endl;
+  }
+}
+
+void demo_5_rollback_stack_undoable_component() {
+  RollbackStack<UndoableComponent<int>> stack;
+  stack.push(UndoableComponent<int>(0));
+  std::cout << "Stack Top: " << stack.current().value() << std::endl;
+  stack.push(UndoableComponent<int>(1));
+  std::cout << "Stack Top: " << stack.current().value() << std::endl;
+  stack.push(UndoableComponent<int>(2));
+  std::cout << "Stack Top: " << stack.current().value() << std::endl;
+  stack.pop();
+  std::cout << "Stack Top (p): " << stack.current().value() << std::endl;
+  stack.pop();
+  std::cout << "Stack Top (p): " << stack.current().value() << std::endl;
+  stack.push(UndoableComponent<int>(3));
+  std::cout << "Stack Top: " << stack.current().value() << std::endl;
+  stack.push(UndoableComponent<int>(4));
+  std::cout << "Stack Top: " << stack.current().value() << std::endl;
+  stack.push(UndoableComponent<int>(5));
+  std::cout << "Stack Top: " << stack.current().value() << std::endl;
+}
+
 int main() {
-  demo_3_undoable_component();
+  demo_5_rollback_stack_undoable_component();
 }
