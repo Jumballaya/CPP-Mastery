@@ -5,6 +5,7 @@
 #include "RollbackStack.hpp"
 #include "ScopedTransaction.hpp"
 #include "UndoableComponent.hpp"
+#include "UndoableEntity.hpp"
 #include "UndoableRegistry.hpp"
 
 void demo_1_scoped_transaction() {
@@ -135,6 +136,52 @@ void demo_6_undoable_registry() {
   TrackedObject::print_stats();
 }
 
+void demo_7_undoable_entity() {
+  UndoableEntity<TrackedPayload> stats;
+
+  // Initial health
+  stats.edit("Health").resize(100);
+  stats.commit("Health");
+
+  // Modify health but don't commit yet
+  stats.edit("Health").resize(50);
+  std::cout << "Health (dirty): " << stats.is_dirty("Health") << "\n";
+  std::cout << "Health size (uncommitted): " << stats.edit("Health").size() << "\n";
+  std::cout << "Health size (committed): " << stats.value("Health").size() << "\n";
+
+  // Undo the edit
+  stats.undo("Health");
+  std::cout << "After undo: Health size = " << stats.value("Health").size() << "\n";
+
+  // New stat: Strength
+  stats.edit("Strength").resize(25);
+  stats.commit("Strength");
+  std::cout << "Strength size: " << stats.value("Strength").size() << "\n";
+
+  // Modify both
+  stats.edit("Health").resize(75);
+  stats.edit("Strength").resize(10);
+  stats.commitAll();
+  std::cout << "After commitAll():\n";
+  std::cout << "  Health = " << stats.value("Health").size() << "\n";
+  std::cout << "  Strength = " << stats.value("Strength").size() << "\n";
+
+  // Undo both
+  stats.undoAll();
+  std::cout << "After undoAll():\n";
+  std::cout << "  Health = " << stats.value("Health").size() << "\n";
+  std::cout << "  Strength = " << stats.value("Strength").size() << "\n";
+
+  // Print out keys
+  std::cout << "Keys in registry: ";
+  for (const auto& k : stats.keys()) {
+    std::cout << k << " ";
+  }
+  std::cout << "\n";
+
+  TrackedObject::print_stats();
+}
+
 int main() {
-  demo_6_undoable_registry();
+  demo_7_undoable_entity();
 }
