@@ -1,0 +1,1 @@
+add_executable(slice_view main.cpp)
