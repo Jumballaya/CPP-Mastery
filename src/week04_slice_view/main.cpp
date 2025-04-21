@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 
+#include "ConstexprView.hpp"
 #include "SliceView.hpp"
 
 void demo_1_sliceview() {
@@ -46,6 +47,22 @@ void demo_2_sliceview_for_loop() {
   }
 }
 
+void demo_3_constexpr_view() {
+  constexpr std::array<int, 5> base = {10, 20, 30, 40, 50};
+  auto view = ConstexprView<int, 5>::from_array(base);
+
+  static_assert(view.size() == 5, "Size check failed");
+
+  std::cout << "ConstexprView contents: ";
+  for (auto val : view) {
+    std::cout << val << " ";
+  }
+  std::cout << "\n";
+
+  std::cout << "First element: " << view.front() << "\n";
+  std::cout << "Last element: " << view.back() << "\n";
+}
+
 int main() {
-  demo_2_sliceview_for_loop();
+  demo_3_constexpr_view();
 }
