@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "ConstexprView.hpp"
+#include "FieldOffsetTable.hpp"
 #include "SliceView.hpp"
 
 void demo_1_sliceview() {
@@ -63,6 +64,48 @@ void demo_3_constexpr_view() {
   std::cout << "Last element: " << view.back() << "\n";
 }
 
+struct CharacterStats {
+  int health;
+  float speed;
+  char state;
+};
+
+void demo_4_field_offset_table() {
+  using Stats = CharacterStats;
+  FieldOffsetTable<Stats> table;
+
+  table.registerField("health", &Stats::health);
+  table.registerField("speed", &Stats::speed);
+  table.registerField("state", &Stats::state);
+
+  std::cout << "--- Field Offsets ---" << std::endl;
+  for (const auto& key : table.keys()) {
+    std::cout << key << " offset: " << table.offsetOf(key) << std::endl;
+  }
+
+  // Create sample object
+  Stats stat = {100, 3.5f, 'A'};
+
+  // Raw memory pointer
+  const uint8_t* raw = reinterpret_cast<const uint8_t*>(&stat);
+
+  std::cout << "--- Field Values via Offset ---" << std::endl;
+  for (const auto& key : table.keys()) {
+    size_t offset = table.offsetOf(key);
+
+    if (key == "health") {
+      const int* val = reinterpret_cast<const int*>(raw + offset);
+      std::cout << key << ": " << *val << std::endl;
+    } else if (key == "speed") {
+      const float* val = reinterpret_cast<const float*>(raw + offset);
+      std::cout << key << ": " << *val << std::endl;
+    } else if (key == "state") {
+      const char* val = reinterpret_cast<const char*>(raw + offset);
+      std::cout << key << ": " << *val << std::endl;
+    }
+  }
+}
+
 int main() {
-  demo_3_constexpr_view();
+  demo_4_field_offset_table();
 }
