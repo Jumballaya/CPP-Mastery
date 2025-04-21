@@ -5,6 +5,7 @@
 #include "FieldOffsetTable.hpp"
 #include "FieldProjection.hpp"
 #include "FieldRange.hpp"
+#include "IndexedSpan.hpp"
 #include "SliceView.hpp"
 
 void demo_1_sliceview() {
@@ -167,6 +168,26 @@ void demo_6_field_projection() {
   for (float m : manas) std::cout << m << std::endl;
 }
 
+void demo_7_indexed_span() {
+  std::vector<int> numbers = {10, 20, 30, 40, 50};
+  size_t indices[] = {4, 0, 3};
+
+  IndexedSpan<int> view(numbers.data(), indices, 3);
+
+  std::cout << "Original order:" << std::endl;
+  for (size_t i = 0; i < view.size(); i++) {
+    std::cout << "view[" << i << "] = " << view[i] << std::endl;
+  }
+
+  view[1] = 99;
+
+  std::cout << "\nModified vector:" << std::endl;
+  for (int n : numbers) {
+    std::cout << n << " ";
+  }
+  std::cout << std::endl;
+}
+
 int main() {
-  demo_6_field_projection();
+  demo_7_indexed_span();
 }
