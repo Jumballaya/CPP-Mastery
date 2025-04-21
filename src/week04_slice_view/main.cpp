@@ -3,6 +3,7 @@
 
 #include "ConstexprView.hpp"
 #include "FieldOffsetTable.hpp"
+#include "FieldRange.hpp"
 #include "SliceView.hpp"
 
 void demo_1_sliceview() {
@@ -106,6 +107,32 @@ void demo_4_field_offset_table() {
   }
 }
 
+struct StatBlock {
+  int health;
+  float speed;
+  char state;
+};
+
+void demo_5_field_range() {
+  StatBlock stats[] = {
+      {100, 3.5f, 'A'},
+      {80, 2.2f, 'B'},
+      {50, 1.1f, 'C'}};
+
+  FieldRange<StatBlock, float> speeds(stats, 3, &StatBlock::speed);
+
+  std::cout << "--- Speeds Before ---" << std::endl;
+  for (auto& s : speeds) {
+    std::cout << s << std::endl;
+    s += 1.0f;
+  }
+
+  std::cout << "--- Speeds After ---" << std::endl;
+  for (auto& s : speeds) {
+    std::cout << s << std::endl;
+  }
+}
+
 int main() {
-  demo_4_field_offset_table();
+  demo_5_field_range();
 }
