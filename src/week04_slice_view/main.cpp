@@ -7,6 +7,7 @@
 #include "FieldRange.hpp"
 #include "IndexedSpan.hpp"
 #include "SliceView.hpp"
+#include "SparseSlice.hpp"
 
 void demo_1_sliceview() {
   std::vector<int> numbers = {10, 20, 30, 40, 50, 60};
@@ -188,6 +189,40 @@ void demo_7_indexed_span() {
   std::cout << std::endl;
 }
 
+void demo_8_sparse_slice() {
+  std::cout << "--- Demo: SparseSlice ---" << std::endl;
+
+  // Base data
+  std::vector<int> numbers = {10, 20, 30, 40, 50, 60};
+
+  // Create sparse view over selected elements
+  std::vector<int*> selected;
+  selected.push_back(&numbers[0]);
+  selected.push_back(&numbers[2]);
+  selected.push_back(&numbers[5]);
+
+  SparseSlice<int> sparse(std::move(selected));
+
+  std::cout << "SparseSlice contents: ";
+  for (size_t i = 0; i < sparse.size(); ++i) {
+    std::cout << sparse[i] << " ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "Iterating with range-based for loop: ";
+  for (auto& val : sparse) {
+    std::cout << *val << " ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "Modifying first element in slice..." << std::endl;
+  sparse[0] += 5;
+
+  std::cout << "Original vector: ";
+  for (int val : numbers) std::cout << val << " ";
+  std::cout << std::endl;
+}
+
 int main() {
-  demo_7_indexed_span();
+  demo_8_sparse_slice();
 }
