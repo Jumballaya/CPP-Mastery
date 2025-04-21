@@ -3,6 +3,7 @@
 
 #include "ConstexprView.hpp"
 #include "FieldOffsetTable.hpp"
+#include "FieldProjection.hpp"
 #include "FieldRange.hpp"
 #include "SliceView.hpp"
 
@@ -133,6 +134,39 @@ void demo_5_field_range() {
   }
 }
 
+struct Stat {
+  float health;
+  float stamina;
+  float mana;
+};
+
+void demo_6_field_projection() {
+  std::vector<Stat> stats = {
+      {100.0f, 50.0f, 30.0f},
+      {80.0f, 40.0f, 60.0f},
+      {60.0f, 70.0f, 90.0f}};
+
+  FieldProjection<Stat> projection(stats.data(), stats.size());
+
+  auto healths = projection.field(&Stat::health);
+  auto manas = projection.field(&Stat::mana);
+
+  std::cout << "--- Initial Healths ---" << std::endl;
+  for (float h : healths) std::cout << h << std::endl;
+
+  std::cout << "--- Initial Manas ---" << std::endl;
+  for (float m : manas) std::cout << m << std::endl;
+
+  for (float& h : healths) h -= 10;
+  for (float& m : manas) m += 5;
+
+  std::cout << "--- Updated Healths ---" << std::endl;
+  for (float h : healths) std::cout << h << std::endl;
+
+  std::cout << "--- Updated Manas ---" << std::endl;
+  for (float m : manas) std::cout << m << std::endl;
+}
+
 int main() {
-  demo_5_field_range();
+  demo_6_field_projection();
 }
