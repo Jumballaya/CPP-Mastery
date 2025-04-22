@@ -1,0 +1,1 @@
+add_executable(function_ref main.cpp)
