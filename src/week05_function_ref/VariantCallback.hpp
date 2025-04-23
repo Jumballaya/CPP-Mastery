@@ -19,6 +19,11 @@ class VariantCallback {
     _func.template emplace<FunctionRef<Fn>>(std::forward<Callable>(c));
   }
 
+  VariantCallback(const VariantCallback&) = default;
+  VariantCallback(VariantCallback&&) noexcept = default;
+  VariantCallback& operator=(const VariantCallback&) = default;
+  VariantCallback& operator=(VariantCallback&&) noexcept = default;
+
   template <typename... Args>
   auto operator()(Args&&... args) const {
     return std::visit(
@@ -34,7 +39,12 @@ class VariantCallback {
   }
 
   explicit operator bool() const { return has_value(); }
-  int index() const { return _func.index(); }
+
+  int index() const {
+    int raw = _func.index();
+    return raw == 0 ? -1 : raw - 1;
+  }
+
   bool has_value() const { return index() != 0; }
   void reset() { _func.template emplace<std::monostate>(); }
 
