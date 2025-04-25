@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "EventBus.hpp"
 #include "FunctionRef.hpp"
 #include "VariantCallback.hpp"
 
@@ -47,6 +48,28 @@ void demo_2_variant_callback() {
   if (!cb) std::cout << "empty\n";
 }
 
+void demo_3_event_bus() {
+  EventBus<void(int), void(float), void(char)> b42;
+
+  auto onClick = [](int n) { std::cout << "Click " << n << std::endl; };
+  auto onClickID = b42.subscribe(EventTag::Click, onClick);
+  b42.publish<int>(EventTag::Click, 42);
+  b42.unsubscribe(EventTag::Click, onClickID);
+  b42.publish<int>(EventTag::Click, 42);
+
+  auto onDamage = [](float n) { std::cout << "Damage " << n << std::endl; };
+  auto onDamageID = b42.subscribe(EventTag::Damage, onDamage);
+  b42.publish<float>(EventTag::Damage, 42.0f);
+  b42.unsubscribe(EventTag::Damage, onDamageID);
+  b42.publish<float>(EventTag::Damage, 42.0f);
+
+  auto onLog = [](char n) { std::cout << "Log " << n << std::endl; };
+  auto onLogID = b42.subscribe(EventTag::Log, onLog);
+  b42.publish<float>(EventTag::Log, 'a');
+  b42.unsubscribe(EventTag::Log, onLogID);
+  b42.publish<float>(EventTag::Log, 'a');
+}
+
 int main() {
-  demo_2_variant_callback();
+  demo_3_event_bus();
 }
