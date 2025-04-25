@@ -2,6 +2,7 @@
 
 #include "EventBus.hpp"
 #include "FunctionRef.hpp"
+#include "MultiCallback.hpp"
 #include "VariantCallback.hpp"
 
 void demo_1_function_ref() {
@@ -70,6 +71,25 @@ void demo_3_event_bus() {
   b42.publish<float>(EventTag::Log, 'a');
 }
 
+void demo_4_multi_callback() {
+  MultiCallback<void(int)> clickCallbacks;
+
+  auto f1 = [](int n) { std::cout << "Listener A: " << n << "\n"; };
+  auto f2 = [](int n) { std::cout << "Listener B: " << n << "\n"; };
+
+  auto id1 = clickCallbacks.add(f1);
+  auto id2 = clickCallbacks.add(f2);
+
+  clickCallbacks(42);  // Should call both
+
+  auto res1 = clickCallbacks.remove(id1);
+
+  auto res2 = clickCallbacks.remove(id1);
+  std::cout << res1 << " " << res2 << std::endl;
+
+  clickCallbacks(99);  // Should call only Listener B
+}
+
 int main() {
-  demo_3_event_bus();
+  demo_4_multi_callback();
 }
