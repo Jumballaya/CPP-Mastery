@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "EventBus.hpp"
+#include "EventQueue.hpp"
 #include "FunctionRef.hpp"
 #include "MultiCallback.hpp"
 #include "VariantCallback.hpp"
@@ -90,6 +91,20 @@ void demo_4_multi_callback() {
   clickCallbacks(99);  // Should call only Listener B
 }
 
+void demo_5_event_queue() {
+  std::cout << "EventQueue Demo 5" << std::endl;
+  EventBus<void(int)> bus;
+  auto rec = [](int n) { std::cout << "Event received: " << n << std::endl; };
+  bus.subscribe(EventTag::Click, rec);
+
+  EventQueue<void(int)> queue(bus);
+  queue.enqueue(EventTag::Click, 42);
+  queue.enqueue(EventTag::Click, 99);
+  std::cout << "Created EventQueue and queued up 42 & 99" << std::endl;
+
+  queue.dispatch_now();
+}
+
 int main() {
-  demo_4_multi_callback();
+  demo_5_event_queue();
 }
