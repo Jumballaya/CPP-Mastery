@@ -1,11 +1,13 @@
 #include <iostream>
 
 #include "EventBus.hpp"
+#include "EventDispatcher.hpp"
 #include "EventQueue.hpp"
 #include "FunctionRef.hpp"
 #include "ListenerHandle.hpp"
 #include "MultiCallback.hpp"
 #include "VariantCallback.hpp"
+// #include "dom/DOM.hpp"
 
 void demo_1_function_ref() {
   std::cout << "--- Demo: FunctionRef ---\n";
@@ -52,7 +54,7 @@ void demo_2_variant_callback() {
 }
 
 void demo_3_event_bus() {
-  EventBus<void(int), void(float), void(char)> b42;
+  EventBus<EventTag, void(int), void(float), void(char)> b42;
 
   auto onClick = [](int n) { std::cout << "Click " << n << std::endl; };
   auto onClickID = b42.subscribe(EventTag::Click, onClick);
@@ -94,11 +96,11 @@ void demo_4_multi_callback() {
 
 void demo_5_event_queue() {
   std::cout << "EventQueue Demo 5" << std::endl;
-  EventBus<void(int)> bus;
+  EventBus<EventTag, void(int)> bus;
   auto rec = [](int n) { std::cout << "Event received: " << n << std::endl; };
   bus.subscribe(EventTag::Click, rec);
 
-  EventQueue<void(int)> queue(bus);
+  EventQueue<EventTag, void(int)> queue(bus);
   queue.enqueue(EventTag::Click, 42);
   queue.enqueue(EventTag::Click, 99);
   std::cout << "Created EventQueue and queued up 42 & 99" << std::endl;
@@ -107,11 +109,11 @@ void demo_5_event_queue() {
 }
 
 void demo_6_listener_handle() {
-  EventBus<void(int)> bus;
+  EventBus<EventTag, void(int)> bus;
 
   auto handler = [](int n) { std::cout << "Event received: " << n << std::endl; };
 
-  ListenerHandle<void(int)> handle(&bus, EventTag::Click, bus.subscribe(EventTag::Click, handler));
+  ListenerHandle<EventTag, void(int)> handle(&bus, EventTag::Click, bus.subscribe(EventTag::Click, handler));
 
   std::cout << "Handle Active: " << handle.active() << std::endl;
   std::cout << "Handle ID: " << handle.id() << std::endl;
@@ -121,6 +123,22 @@ void demo_6_listener_handle() {
   std::cout << "Handle Active: " << handle.active() << std::endl;
   std::cout << "Handle ID: " << handle.id() << std::endl;
   bus.publish(EventTag::Click, 99);
+}
+
+void demo_7_event_dispatcher() {
+}
+
+void demo_8_dom() {
+  // DOM dom;
+  // auto body = dom.createNode();
+  // auto item = dom.createNode();
+  // item.addEventListener(DOMEvents::Change, [](float r, float g, float b) {
+  //   std::cout << "Color changed: ( " << r << ", " << g << ", " << b << " )" << std::endl;
+  // });
+  // body->appendChild(item);
+  // dom.root()->appendChild(body);
+
+  // item->setColor(0.3, 0.1, 0.8);
 }
 
 int main() {

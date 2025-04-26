@@ -6,16 +6,15 @@
 #include <vector>
 
 #include "EventBus.hpp"
-#include "event_tags.hpp"
 
-template <typename... Fns>
+template <typename EventType, typename... Fns>
 class EventQueue {
  public:
-  EventQueue(EventBus<Fns...>& bus) : _bus(bus) {};
+  EventQueue(EventBus<EventType, Fns...>& bus) : _bus(bus) {};
   ~EventQueue() = default;
 
   template <typename... Args>
-  void enqueue(EventTag tag, Args&&... args) {
+  void enqueue(EventType tag, Args&&... args) {
     auto tuple = std::make_tuple(std::forward<Args>(args)...);
     _events.emplace_back([this, tag, tuple = std::move(tuple)]() mutable {
       std::apply(
@@ -38,6 +37,6 @@ class EventQueue {
   bool empty() const { return _events.empty(); }
 
  private:
-  EventBus<Fns...>& _bus;
+  EventBus<EventType, Fns...>& _bus;
   std::vector<std::function<void()>> _events;
 };

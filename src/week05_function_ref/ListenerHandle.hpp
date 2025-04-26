@@ -7,10 +7,10 @@
 
 using ListenerID = uint32_t;
 
-template <typename... Fns>
+template <typename EventType, typename... Fns>
 class ListenerHandle {
  public:
-  ListenerHandle(EventBus<Fns...>* bus, EventTag tag, ListenerID id)
+  ListenerHandle(EventBus<EventType, Fns...>* bus, EventType tag, ListenerID id)
       : _bus(bus), _tag(tag), _id(id) {}
 
   ~ListenerHandle() {
@@ -33,13 +33,13 @@ class ListenerHandle {
     return res;
   }
 
-  EventTag tag() const { return _tag; }
+  EventType tag() const { return _tag; }
   ListenerID id() const { return _id; }
   bool active() const { return _active; }
 
  private:
-  EventBus<Fns...>* _bus;
-  EventTag _tag;
+  EventBus<EventType, Fns...>* _bus;
+  EventType _tag;
   ListenerID _id;
   bool _active = true;
 };
