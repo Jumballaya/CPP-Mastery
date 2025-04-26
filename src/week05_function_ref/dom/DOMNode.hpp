@@ -4,7 +4,6 @@
 #include <memory>
 #include <vector>
 
-#include "../EventBus.hpp"
 #include "../EventDispatcher.hpp"
 #include "../traits.hpp"
 #include "EventEmitter.hpp"
