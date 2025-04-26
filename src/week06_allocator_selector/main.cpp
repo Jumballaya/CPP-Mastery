@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "SmallFunctionRef.hpp"
 #include "StoragePolicy.hpp"
 
 void demo_1_heap_allocator() {
@@ -24,6 +25,25 @@ void demo_2_inline_allocator() {
   std::cout << ptr->a << ", " << ptr->b << ", " << ptr->c << '\n';
 }
 
+void demo_3_small_func_ref() {
+  using Fn = SmallFunctionRef<64, void()>;
+
+  Fn a([] { std::cout << "Hello from A\n"; });
+  Fn b([] { std::cout << "Hello from B\n"; });
+
+  a();  // should print Hello from A
+  b();  // should print Hello from B
+
+  b = std::move(a);  // move a into b
+
+  b();  // should now print Hello from A
+  try {
+    a();  // should throw!
+  } catch (const std::bad_function_call&) {
+    std::cout << "Caught bad_function_call on moved-from A\n";
+  }
+}
+
 int main() {
-  demo_2_inline_allocator();
+  demo_3_small_func_ref();
 }
