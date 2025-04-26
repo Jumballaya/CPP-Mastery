@@ -3,6 +3,15 @@
 #include <tuple>
 #include <variant>
 
+template <typename T>
+struct ApplyTuple;
+
+template <typename... Ts>
+struct ApplyTuple<std::tuple<Ts...>> {
+  template <template <typename...> class Target, typename... Extra>
+  using apply = Target<Extra..., Ts...>;
+};
+
 template <typename Fn>
 struct SignatureTraits;
 

@@ -25,14 +25,14 @@ class VariantCallback {
   VariantCallback& operator=(VariantCallback&&) noexcept = default;
 
   template <typename... Args>
-  auto operator()(Args&&... args) const {
-    return std::visit(
-        [&](auto&& fn) -> decltype(auto) {
+  void operator()(Args&&... args) const {
+    std::visit(
+        [&](auto&& fn) {
           using FnType = std::decay_t<decltype(fn)>;
           if constexpr (std::is_same_v<FnType, std::monostate>) {
             throw std::bad_function_call();
-          } else {
-            return fn(std::forward<Args>(args)...);
+          } else if constexpr (std::is_invocable_r_v<void, FnType, Args&&...>) {
+            fn(std::forward<Args>(args)...);
           }
         },
         _func);
