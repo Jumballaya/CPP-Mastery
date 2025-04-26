@@ -1,14 +1,12 @@
 #pragma once
 
-#include "event_tags.hpp"
-
-template <typename NamespaceTag>
+template <typename NamespaceTag, typename Events>
 class DispatchToken {
  public:
-  explicit DispatchToken(EventTag tag) : _tag(tag) {}
+  explicit DispatchToken(Events tag) : _tag(tag) {}
 
-  EventTag tag() const { return _tag; }
+  Events tag() const { return _tag; }
 
  private:
-  EventTag _tag;
+  Events _tag;
 };

@@ -1,0 +1,1 @@
+add_executable(allocator_selector main.cpp)
