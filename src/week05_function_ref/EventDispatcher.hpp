@@ -27,12 +27,20 @@ class EventDispatcher {
     _queue.dispatch_now();
   }
 
-  template <typename Callable,
-            typename Fn = typename SelectMatchingFn<Callable, Fns...>::type,
-            typename = std::enable_if_t<!std::is_same_v<Fn, void>>>
-  ListenerHandle<EventType, Fns...> addEventListener(EventType tag, Callable&& cb) {
-    uint32_t id = _bus.subscribe(tag, cb);
-    return ListenerHandle<EventType, Fns...>(&_bus, tag, id);
+  //
+  //  You HAVE to keep the reference to the handle alive for as long
+  //  as you want the event listener to live, if you do not save the
+  //  return value, your listener will silently dissapear
+  //
+  //    i'm still learning....
+  //
+  template <class Callable,
+            class Fn = typename SelectMatchingFn<Callable, Fns...>::type,
+            std::enable_if_t<!std::is_same_v<Fn, void>, int> = 0>
+  ListenerHandle<EventType, Fns...>
+  addEventListener(EventType tag, Callable&& cb) {
+    uint32_t id = _bus.subscribe(tag, std::forward<Callable>(cb));
+    return {&_bus, tag, id};
   }
 
   void removeEventListener(ListenerHandle<EventType, Fns...>& handle) {

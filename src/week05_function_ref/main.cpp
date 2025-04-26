@@ -7,7 +7,7 @@
 #include "ListenerHandle.hpp"
 #include "MultiCallback.hpp"
 #include "VariantCallback.hpp"
-// #include "dom/DOM.hpp"
+#include "dom/DOM.hpp"
 
 enum class TestEvent : uint32_t {
   Log,
@@ -165,19 +165,29 @@ void demo_7_event_dispatcher() {
   dispatcher.emit(TestEvent::Damage, 7.7f, 8.8f);
 }
 
-void demo_8_dom() {
-  // DOM dom;
-  // auto body = dom.createNode();
-  // auto item = dom.createNode();
-  // item.addEventListener(DOMEvents::Change, [](float r, float g, float b) {
-  //   std::cout << "Color changed: ( " << r << ", " << g << ", " << b << " )" << std::endl;
-  // });
-  // body->appendChild(item);
-  // dom.root()->appendChild(body);
+void demo_8_dom_tree() {
+  DOM dom;
 
-  // item->setColor(0.3, 0.1, 0.8);
+  auto child1 = dom.createNode();
+  auto child2 = dom.createNode();
+
+  dom.root()->appendChild(child1);
+  dom.root()->appendChild(child2);
+
+  auto h1 = child1->addEventListener(DOMEvents::Move, [](float x, float y) {
+    std::cout << "Child1 moved to: (" << x << ", " << y << ")\n";
+  });
+
+  auto h2 = child2->addEventListener(DOMEvents::Change, [](float r, float g, float b) {
+    std::cout << "Child2 color changed to: (" << r << ", " << g << ", " << b << ")\n";
+  });
+
+  child1->setPosition(100.0f, 200.0f);
+  child2->setColor(1.0f, 0.5f, 0.25f);
+
+  dom.dispatch();  // Flush queued events
 }
 
 int main() {
-  demo_7_event_dispatcher();
+  demo_8_dom_tree();
 }

@@ -16,14 +16,15 @@ class EventBus {
   using Listener = VariantCallback<Fns...>;
   using ListenerID = uint32_t;
 
-  template <typename Callable,
-            typename Fn = typename SelectMatchingFn<Callable, Fns...>::type,
-            typename = std::enable_if_t<
-                !std::is_same_v<Fn, void> &&
-                std::is_lvalue_reference_v<Callable>>>
+  template <class Callable,
+            class Fn = typename SelectMatchingFn<Callable, Fns...>::type,
+            std::enable_if_t<!std::is_same_v<Fn, void>, int> = 0>
   ListenerID subscribe(EventType tag, Callable&& cb) {
-    _table[tag].push_back(Entry{_nextID, cb});
-    return _nextID++;
+    Entry e;
+    e.id = _nextID++;
+    e.fn = VariantCallback<Fns...>(std::forward<Callable>(cb));  // ← forward!
+    _table[tag].push_back(std::move(e));
+    return e.id;
   }
 
   template <typename... Args>

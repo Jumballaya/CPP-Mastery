@@ -10,13 +10,18 @@ class VariantCallback {
  public:
   VariantCallback() = default;
 
-  template <typename Callable,
-            typename Fn = typename SelectMatchingFn<Callable, Fns...>::type,
-            typename = std::enable_if_t<
-                !std::is_same_v<Fn, void> &&
-                std::is_lvalue_reference_v<Callable>>>
+  template <class Callable,
+            class Fn = typename SelectMatchingFn<Callable, Fns...>::type>
   VariantCallback(Callable&& c) {
-    _func.template emplace<FunctionRef<Fn>>(std::forward<Callable>(c));
+    static_assert(!std::is_same_v<Fn, void>, "Callable incompatible");
+
+    if constexpr (std::is_lvalue_reference_v<Callable&&>) {
+      // l-value: fast, non-owning view
+      _func.template emplace<FunctionRef<Fn>>(c);
+    } else {
+      // r-value: own a copy
+      _func.template emplace<std::function<Fn>>(std::move(c));
+    }
   }
 
   VariantCallback(const VariantCallback&) = default;
@@ -50,5 +55,5 @@ class VariantCallback {
 
  private:
   // std::monostate is being used to signal an empty state, so index() == 0 means empty
-  std::variant<std::monostate, FunctionRef<Fns>...> _func;
+  std::variant<std::monostate, FunctionRef<Fns>..., std::function<Fns>...> _func;
 };
