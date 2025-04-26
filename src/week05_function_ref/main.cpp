@@ -3,6 +3,7 @@
 #include "EventBus.hpp"
 #include "EventQueue.hpp"
 #include "FunctionRef.hpp"
+#include "ListenerHandle.hpp"
 #include "MultiCallback.hpp"
 #include "VariantCallback.hpp"
 
@@ -105,6 +106,23 @@ void demo_5_event_queue() {
   queue.dispatch_now();
 }
 
+void demo_6_listener_handle() {
+  EventBus<void(int)> bus;
+
+  auto handler = [](int n) { std::cout << "Event received: " << n << std::endl; };
+
+  ListenerHandle<void(int)> handle(&bus, EventTag::Click, bus.subscribe(EventTag::Click, handler));
+
+  std::cout << "Handle Active: " << handle.active() << std::endl;
+  std::cout << "Handle ID: " << handle.id() << std::endl;
+  bus.publish(EventTag::Click, 42);
+
+  handle.unsubscribe();
+  std::cout << "Handle Active: " << handle.active() << std::endl;
+  std::cout << "Handle ID: " << handle.id() << std::endl;
+  bus.publish(EventTag::Click, 99);
+}
+
 int main() {
-  demo_5_event_queue();
+  demo_6_listener_handle();
 }
