@@ -5,13 +5,8 @@
 #include <vector>
 
 #include "VariantCallback.hpp"
+#include "event_tags.hpp"
 #include "traits.hpp"
-
-enum class EventTag : uint32_t {
-  Log,
-  Damage,
-  Click
-};
 
 template <typename... Fns>
 class EventBus {

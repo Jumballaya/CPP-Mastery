@@ -3,6 +3,7 @@
 #include <cstdint>
 
 #include "EventBus.hpp"
+#include "event_tags.hpp"
 
 using ListenerID = uint32_t;
 

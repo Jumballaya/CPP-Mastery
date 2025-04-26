@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "EventBus.hpp"
+#include "event_tags.hpp"
 
 template <typename... Fns>
 class EventQueue {
