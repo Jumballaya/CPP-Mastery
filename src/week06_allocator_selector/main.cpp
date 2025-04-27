@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "SmallAllocator.hpp"
 #include "SmallFunctionRef.hpp"
 #include "SmallVariantCallback.hpp"
 #include "StoragePolicy.hpp"
@@ -74,6 +75,48 @@ void demo_4_small_variant_callback() {
   cb2(3.14f);  // Should print: Received float: 3.14
 }
 
+struct Bar {
+  int x, y;
+};
+
+void demo_5_small_allocator() {
+  SmallAllocator<128> alloc;
+
+  Bar* bar1 = static_cast<Bar*>(alloc.allocate(sizeof(Bar), alignof(Bar)));
+  assert(bar1 != nullptr);
+  bar1->x = 10;
+  bar1->y = 20;
+
+  Bar* bar2 = static_cast<Bar*>(alloc.allocate(sizeof(Bar), alignof(Bar)));
+  assert(bar2 != nullptr);
+  bar2->x = 30;
+  bar2->y = 40;
+
+  std::cout << "Bar1: (" << bar1->x << ", " << bar1->y << ")\n";
+  std::cout << "Bar2: (" << bar2->x << ", " << bar2->y << ")\n";
+
+  alloc.reset();
+
+  Bar* bar3 = static_cast<Bar*>(alloc.allocate(sizeof(Foo), alignof(Bar)));
+  assert(bar3 != nullptr);
+  bar3->x = 50;
+  bar3->y = 60;
+
+  std::cout << "Bar3 after reset: (" << bar3->x << ", " << bar3->y << ")\n";
+}
+
+void demo_6_small_allocator_overflow() {
+  SmallAllocator<64> alloc;
+
+  void* a = alloc.allocate(32, alignof(std::max_align_t));
+  assert(a != nullptr);
+
+  void* b = alloc.allocate(40, alignof(std::max_align_t));  // too big!
+  assert(b == nullptr);
+
+  std::cout << "Overflow test passed.\n";
+}
+
 int main() {
-  demo_4_small_variant_callback();
+  demo_6_small_allocator_overflow();
 }
