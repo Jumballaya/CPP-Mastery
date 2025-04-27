@@ -68,7 +68,7 @@ class SmallFunctionRef<N, R(Args...)> {
     return *this;
   }
 
-  R operator()(Args&&... args) {
+  R operator()(Args&&... args) const {
     if (!_invoker) {
       throw std::bad_function_call();
     }

@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "SmallFunctionRef.hpp"
+#include "SmallVariantCallback.hpp"
 #include "StoragePolicy.hpp"
 
 void demo_1_heap_allocator() {
@@ -44,6 +45,35 @@ void demo_3_small_func_ref() {
   }
 }
 
+void demo_4_small_variant_callback() {
+  SmallVariantCallback<64, void(int), void(float)> cb;
+
+  // Assign an int handler
+  cb = [](int x) {
+    std::cout << "Received int: " << x << "\n";
+  };
+
+  cb(42);  // Should print: Received int: 42
+
+  // Move cb into a new one
+  SmallVariantCallback<64, void(int), void(float)> cb2 = std::move(cb);
+
+  try {
+    cb(99);  // This should throw std::bad_function_call
+  } catch (const std::bad_function_call& e) {
+    std::cout << "Caught bad_function_call when calling moved-from cb\n";
+  }
+
+  cb2(7);  // Should print: Received int: 7
+
+  // Now overwrite with a float handler
+  cb2 = [](float f) {
+    std::cout << "Received float: " << f << "\n";
+  };
+
+  cb2(3.14f);  // Should print: Received float: 3.14
+}
+
 int main() {
-  demo_3_small_func_ref();
+  demo_4_small_variant_callback();
 }
