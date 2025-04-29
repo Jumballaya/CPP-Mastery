@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include "./events/Entity.hpp"
+#include "./events/SmallEventDispatcher.hpp"
 #include "SmallAllocator.hpp"
 #include "SmallFunctionRef.hpp"
 #include "SmallVariantCallback.hpp"
@@ -117,6 +119,47 @@ void demo_6_small_allocator_overflow() {
   std::cout << "Overflow test passed.\n";
 }
 
+enum class TestEvent : uint32_t {
+  Log,
+  Damage,
+  Click
+};
+
+void demo_8_small_event_dispatcher() {
+  using Dispatcher = SmallEventDispatcher<TestEvent, 64, void(int), void(float)>;
+  Dispatcher dispatcher;
+
+  auto handle = dispatcher.addListener(TestEvent::Click, [](int n) {
+    std::cout << "♦ Received Click: " << n << '\n';
+  });
+
+  dispatcher.emit(TestEvent::Click, 42);
+  dispatcher.removeListener(handle);
+  dispatcher.emit(TestEvent::Click, 99);
+}
+
+enum class Msg { HealthChanged,
+                 DamageTaken };
+
+void demo_9_entity_bus() {
+  using Dispatcher = SmallEventDispatcher<Msg, 64, void(int), void(float)>;
+  Dispatcher bus;
+
+  Entity<Msg, 64, void(int), void(float)> player(bus);
+  Entity<Msg, 64, void(int), void(float)> enemy(bus);
+
+  player.on(Msg::HealthChanged, [](int hp) {
+    std::cout << "Player HP changed to: " << hp << '\n';
+  });
+
+  enemy.on(Msg::DamageTaken, [](float dmg) {
+    std::cout << "Enemy took damage: " << dmg << '\n';
+  });
+
+  player.emit(Msg::HealthChanged, 95);
+  enemy.emit(Msg::DamageTaken, 12.5f);
+}
+
 int main() {
-  demo_6_small_allocator_overflow();
+  demo_9_entity_bus();
 }
