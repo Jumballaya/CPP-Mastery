@@ -69,6 +69,7 @@ class PagedVector {
     if (_pages[page] == nullptr) {
       // ::operator new(...) is the global new operator
       // this is a placement new that allocates a whole new page
+      // but it does NOT construct any T's yet
       _pages[page] = reinterpret_cast<T*>(::operator new(sizeof(T) * PageSize));
     }
 
