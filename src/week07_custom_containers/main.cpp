@@ -3,6 +3,7 @@
 
 #include "DenseSet.hpp"
 #include "FixedVector.hpp"
+#include "PagedVector.hpp"
 #include "RingBuffer.hpp"
 #include "SlotMap.hpp"
 
@@ -114,6 +115,43 @@ void demo_4_ring_buffer() {
   }
 }
 
+void demo_5_paged_vector() {
+  std::cout << "PagedVector demo:\n";
+
+  // Define a paged vector with 3 items per page and 2 pages max (capacity = 6)
+  PagedVector<std::string, 3, 2> names;
+
+  names.push_back("Alpha");
+  names.push_back("Bravo");
+  names.push_back("Charlie");
+
+  std::cout << "After filling first page:\n";
+  for (size_t i = 0; i < names.size(); ++i) {
+    std::cout << "- " << names[i] << "\n";
+  }
+
+  names.push_back("Delta");
+  names.push_back("Echo");
+  names.push_back("Foxtrot");
+
+  std::cout << "\nAfter filling second page:\n";
+  for (size_t i = 0; i < names.size(); ++i) {
+    std::cout << "- " << names[i] << "\n";
+  }
+
+  std::cout << "\nFront: " << names.front() << "\n";
+  std::cout << "Back: " << names.back() << "\n";
+
+  std::cout << "\nCalling pop_back() twice...\n";
+  names.pop_back();
+  names.pop_back();
+
+  std::cout << "\nAfter popping 2 values:\n";
+  for (size_t i = 0; i < names.size(); ++i) {
+    std::cout << "- " << names[i] << "\n";
+  }
+}
+
 int main() {
-  demo_4_ring_buffer();
+  demo_5_paged_vector();
 }
