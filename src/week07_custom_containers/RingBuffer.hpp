@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <cstddef>
 #include <iostream>
 
@@ -54,6 +55,8 @@ class RingBuffer {
   }
 
   T pop() {
+    assert(_count > 0);
+
     size_t idx = _tail;
     _tail = (_tail + 1) % N;
     if (_tail == _head + 1) {
