@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 
+#include "DenseSet.hpp"
 #include "FixedVector.hpp"
 #include "SlotMap.hpp"
 
@@ -48,6 +49,38 @@ void demo_2_slotmap() {
   }
 }
 
+void demo_3_dense_set() {
+  DenseSet<uint32_t, 8> set;
+
+  std::cout << "Initial insertions:\n";
+  set.insert(3);
+  set.insert(1);
+  set.insert(6);
+
+  for (auto v : set) {
+    std::cout << "- " << v << '\n';
+  }
+
+  std::cout << "\nContains 1? " << (set.contains(1) ? "yes" : "no") << '\n';
+  std::cout << "Contains 5? " << (set.contains(5) ? "yes" : "no") << '\n';
+
+  std::cout << "\nErase 1\n";
+  set.erase(1);
+
+  std::cout << "\nAfter erase:\n";
+  for (auto v : set) {
+    std::cout << "- " << v << '\n';
+  }
+
+  std::cout << "\nInsert 2\n";
+  set.insert(2);
+
+  std::cout << "\nFinal state:\n";
+  for (auto v : set) {
+    std::cout << "- " << v << '\n';
+  }
+}
+
 int main() {
-  demo_2_slotmap();
+  demo_3_dense_set();
 }
