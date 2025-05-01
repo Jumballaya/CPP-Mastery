@@ -1,6 +1,6 @@
 ## Theme of the week
 
-Efficient memory management across systems
+Polymorphic Memory Resources & Frame Allocators
 
 ## What did I learn?
 
