@@ -37,7 +37,7 @@ class FixedVector {
     return *this;
   }
 
-  FixedVector& operator=(FixedVector&&) noexcept {
+  FixedVector& operator=(FixedVector&& other) noexcept {
     if (this == &other) return *this;
     this->~FixedVector();
     _size = other._size;
@@ -70,13 +70,13 @@ class FixedVector {
     return *ptr(index);
   }
 
-  void push_back(const T&) {
+  void push_back(const T& item) {
     if (_size + 1 > N) return;
     new (ptr(_size)) T(item);
     ++_size;
   }
 
-  void push_back(T&&) {
+  void push_back(T&& item) {
     if (_size + 1 > N) return;
     new (ptr(_size)) T(std::forward<T>(item));
     ++_size;
