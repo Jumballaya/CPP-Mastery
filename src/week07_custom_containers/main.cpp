@@ -3,6 +3,7 @@
 
 #include "DenseSet.hpp"
 #include "FixedVector.hpp"
+#include "RingBuffer.hpp"
 #include "SlotMap.hpp"
 
 void demo_1_fixed_vector() {
@@ -81,6 +82,38 @@ void demo_3_dense_set() {
   }
 }
 
+void demo_4_ring_buffer() {
+  RingBuffer<std::string, 4> buffer;
+
+  buffer.push("one");
+  buffer.push("two");
+  buffer.push("three");
+  buffer.push("four");
+
+  std::cout << "Beginning size:" << std::endl;
+  for (size_t i = 0; i < buffer.size(); ++i) {
+    std::cout << "- " << buffer[i] << "\n";
+  }
+
+  std::cout << "Front: " << buffer.front() << "\n";
+  std::cout << "Back: " << buffer.back() << "\n";
+
+  buffer.push("five");  // should overwrite "one"
+  std::cout << "After push(five):" << std::endl;
+  for (size_t i = 0; i < buffer.size(); ++i) {
+    std::cout << "- " << buffer[i] << "\n";
+  }
+
+  auto popped = buffer.pop();  // pops "two"
+  std::cout << "Popped: " << popped << "\n";
+
+  buffer.push("six");
+  std::cout << "Final state after push(six):" << std::endl;
+  for (size_t i = 0; i < buffer.size(); ++i) {
+    std::cout << "- " << buffer[i] << "\n";
+  }
+}
+
 int main() {
-  demo_3_dense_set();
+  demo_4_ring_buffer();
 }
