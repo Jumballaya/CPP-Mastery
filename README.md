@@ -1,6 +1,6 @@
 # C++ Learning Journey
 
-This repository tracks my structured journey from senior software engineer to expert-level C++ systems programmer — with the goal of becoming a senior or lead developer on a game engine team.
+This repository tracks my structured journey from senior software engineer to expert-level C++ systems programmer : with the goal of becoming a senior or lead developer on a game engine team.
 
 Every system, log, and case study in this repo is built to simulate real-world runtime problems, memory challenges, and architectural decisions common in production-grade engines.
 
@@ -12,7 +12,7 @@ To transition into a professional game engine development role by mastering C++ 
 
 ## Current Focus
 
-Currently building foundational C++ systems focused on ownership, RAII, and memory safety — including custom smart pointers, rollback guards, and lifetime tracking. This forms the base of more advanced systems like allocators and ECS in the coming weeks.
+Currently building foundational C++ systems focused on ownership, RAII, and memory safety : including custom smart pointers, rollback guards, and lifetime tracking. This forms the base of more advanced systems like allocators and ECS in the coming weeks.
 
 ---
 
@@ -40,12 +40,12 @@ The curriculum is project-driven and focuses on core systems topics such as:
 
 ### Key Systems I’ll Be Building
 
-- `ResourceManager<T>` — Ownership, RAII, and rollback safety
-- `ECS Runtime` — SoA data layout, component iteration, system scheduler
-- `Job System` — Thread pool, lock-free queues, task graph with fibers
-- `Custom Allocator` — Arena allocator with diagnostics
-- `Instrumentation Layer` — In-engine profiling with Tracy
-- `Plugin Runtime` — Modular loadable systems and hot-reloadable symbols
+- `ResourceManager<T>`: Ownership, RAII, and rollback safety
+- `ECS Runtime`: SoA data layout, component iteration, system scheduler
+- `Job System`: Thread pool, lock-free queues, task graph with fibers
+- `Custom Allocator`: Arena allocator with diagnostics
+- `Instrumentation Layer`: In-engine profiling with Tracy
+- `Plugin Runtime`: Modular loadable systems and hot-reloadable symbols
 
 ---
 

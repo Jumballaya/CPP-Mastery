@@ -226,8 +226,6 @@ void demo_8_transaction_group() {
 
     std::cout << "Before Rollback: HP=" << rollbackGroup.get(0).size()
               << ", MP=" << rollbackGroup.get(1).size() << std::endl;
-
-    // No call to commit_all() — triggers rollback
   }
 
   std::cout << "After Rollback: HP=" << hp.size()

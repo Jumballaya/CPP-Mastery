@@ -15,14 +15,14 @@ Lifetimes and move/copy semantics.
 
 ## What was the most difficult thing to learn?
 
-- memcpy vs. RAII: I had to unlearn old habits. Using memcpy on resource-owning objects caused bugs — but this drove home a core C++ lesson: never copy an object manually if you don’t fully understand its internals.
+- memcpy vs. RAII: I had to unlearn old habits. Using memcpy on resource-owning objects caused bugs, but this drove home a core C++ lesson: never copy an object manually if you don’t fully understand its internals.
 - There are so many constructor overloads, it is hard to keep track of them. I also ran into the issue of needing a default constructor for containers to copy/move data into.
 - Making sure not to double free when setting up move constructor/assignment operator. A few times I either freed something and didn't set it to nullptr or another ptr and the destructor tried to free it again causing an error.
 
 ## How does this help me get to lead C++ developer?
 
 - I now own the object lifecycle, not just in theory but in practice. The Rule of 5 is embedded in my workflow. I can reason clearly about when resources are owned, moved, destroyed, or reused.
-- These patterns are the backbone of low-level engine architecture — ECS, allocators, system managers, scene graphs, asset loaders, and more.
+- These patterns are the backbone of low-level engine architecture: ECS, allocators, system managers, scene graphs, asset loaders, and more.
 - I am getting more confident in my ability to write safe and predictable software in C++ and I can see myself starting to think more like an engine developer.
   - Encapsulate ownership
   - Trust RAII

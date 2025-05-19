@@ -16,12 +16,12 @@ Another quick blurb about the AI: It is set up to never give me code that I can 
 
 The last few weeks have been focused on RAII, object lifetimes and resource ownership. I created the following classes:
 
-- `ResourceManager<T>` — RAII + smart pointer ownership
-- `TrackedObject`, `TrackedVector`, `TrackedBuffer` — Rule-of-5 lifecycle tracing
-- `ScopedGuard`, `ScopedTransaction`, `TransactionGroup` — rollback + atomicity
-- `UndoableComponent`, `UndoableRegistry`, `UndoableEntity` — local edit/undo/commit
-- `SliceView`, `ConstexprView`, `SparseSlice` — safe, non-owning memory views
-- `FieldOffsetTable<T>` — pointer-to-member offset introspection
+- `ResourceManager<T>`: RAII + smart pointer ownership
+- `TrackedObject`, `TrackedVector`, `TrackedBuffer`: Rule-of-5 lifecycle tracing
+- `ScopedGuard`, `ScopedTransaction`, `TransactionGroup`: rollback + atomicity
+- `UndoableComponent`, `UndoableRegistry`, `UndoableEntity`: local edit/undo/commit
+- `SliceView`, `ConstexprView`, `SparseSlice`: safe, non-owning memory views
+- `FieldOffsetTable<T>`: pointer-to-member offset introspection
 
 ## Problem Space
 
@@ -33,7 +33,7 @@ I used this month to gain a solid understand of how data is store and utilized i
 
 ### `TrackedObject<T>` [Week 2] Rule of 5
 
-I implemented a base class that logs every constructor, assignment, and destructor call — showing me exactly how my types behave during vector push_back, copying, moving, and destruction. This was critical for debugging:
+I implemented a base class that logs every constructor, assignment, and destructor call, showing me exactly how my types behave during vector push_back, copying, moving, and destruction. This was critical for debugging:
 
 ```cpp
 TrackedObject a("A");
@@ -46,7 +46,7 @@ This class went on to be the base for many other classes, and provided a great w
 
 ### `ScopedTransaction<T>` [Week 3] Scoped Lifetimes
 
-Gives me rollback semantics using RAII — commit if needed, otherwise rollback on scope exit.
+Gives me rollback semantics using RAII: commit if needed, otherwise rollback on scope exit.
 
 ```cpp
 ScopedTransaction<Buffer> tx(myBuffer);
@@ -82,7 +82,7 @@ ConstexprView<int, 4> view = ConstexprView::from_array(std::array<int, 4>{...});
 SparseSlice<Component> selection({ &a, &b, &c });
 ```
 
-I also learned to avoid misuse of `memcpy` on anything with ownership — I now rely strictly on copy/move constructors.
+I also learned to avoid misuse of `memcpy` on anything with ownership: I now rely strictly on copy/move constructors.
 
 ## Real-World Engine Connections
 
@@ -96,8 +96,8 @@ I also learned to avoid misuse of `memcpy` on anything with ownership — I now 
 ## What I’d Improve
 
 - **TrackedVector**: Move away from `memcpy`, use smart pointer containers or iterators.
-- **ConstexprView**: Revisit design — very limited benefit right now, but a good exploration of `constexpr`.
-- **UndoableEntity**: Support nested fields or composed undo trees — possibly add serialization hooks later.
+- **ConstexprView**: Revisit design : very limited benefit right now, but a good exploration of `constexpr`.
+- **UndoableEntity**: Support nested fields or composed undo trees : possibly add serialization hooks later.
 - **General**: Move away from raw pointers as much as possible. This month was about ownership, including pointers, but in the future smart pointers seem like the way to go.
 
 ## Closing Thought
