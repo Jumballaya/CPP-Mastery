@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 
 template <typename V, size_t N>
 class SlotMap {
