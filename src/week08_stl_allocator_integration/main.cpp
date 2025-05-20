@@ -31,6 +31,37 @@ void demo_1_frame_allocator() {
   std::cout << "Used bytes after reset: " << allocator.used() << "\n";
 }
 
+void demo_2_nested_vectors() {
+  constexpr size_t bufferSize = 2048;
+  std::byte buffer[bufferSize];
+
+  FrameAllocator allocator(buffer, bufferSize);
+  FrameResource memory(&allocator);
+
+  using InnerVec = std::pmr::vector<std::string>;
+  std::pmr::vector<InnerVec> table(&memory);
+
+  for (int row = 0; row < 3; ++row) {
+    InnerVec inner(&memory);  // each row uses the same FrameResource
+    inner.emplace_back("Row " + std::to_string(row) + " Col 0");
+    inner.emplace_back("Row " + std::to_string(row) + " Col 1");
+    inner.emplace_back("Row " + std::to_string(row) + " Col 2");
+
+    table.push_back(std::move(inner));
+  }
+
+  std::cout << "Nested Vector Contents:\n";
+  for (const auto& row : table) {
+    for (const auto& cell : row) {
+      std::cout << "- " << cell << "\n";
+    }
+  }
+
+  std::cout << "Used bytes before reset: " << allocator.used() << "\n";
+  allocator.reset();
+  std::cout << "Used bytes after reset: " << allocator.used() << "\n";
+}
+
 int main() {
-  demo_1_frame_allocator();
+  demo_2_nested_vectors();
 }
