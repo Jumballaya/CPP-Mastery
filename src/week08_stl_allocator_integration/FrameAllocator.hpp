@@ -14,13 +14,12 @@ class FrameAllocator {
   }
 
   ~FrameAllocator() = default;
-  FrameAllocator(FrameAllocator& const other) = delete;
-  FrameAllocator& operator=(FrameAllocator& const other) = delete;
-  FrameAllocator(FrameAllocator&& const other) = delete;
-  FrameAllocator& operator=(FrameAllocator&& const other) = delete;
+  FrameAllocator(const FrameAllocator&) = delete;
+  FrameAllocator& operator=(const FrameAllocator&) = delete;
+  FrameAllocator(FrameAllocator&&) = delete;
+  FrameAllocator& operator=(FrameAllocator&&) = delete;
 
   void* allocate(size_t size, size_t alignment) {
-    assert(alignment >= alignof(std::max_align_t));
     assert((alignment & (alignment - 1)) == 0);  // alignment is a power of 2
 
     size_t aligned_offset = (_offset + alignment - 1) & ~(alignment - 1);
@@ -37,6 +36,7 @@ class FrameAllocator {
   size_t used() const { return _offset; }
   size_t remaining() const { return _capacity - _offset; }
 
+  [[maybe_unused]]
   void deallocate() {}  // no-op required by std::pmr
 
  private:
