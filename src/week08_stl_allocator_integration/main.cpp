@@ -7,6 +7,7 @@
 
 #include "FrameAllocator.hpp"
 #include "FrameResource.hpp"
+#include "Pool.hpp"
 #include "PoolAllocator.hpp"
 #include "PoolResource.hpp"
 
@@ -96,6 +97,66 @@ void demo_3_pool_allocator() {
   std::cout << "\nDone.\n";
 }
 
+struct Component {
+  int id;
+  float value;
+};
+
+void demo_4_pool() {
+  Pool<Component, 8> pool;
+
+  Component* ptrs[8];
+
+  std::cout << "Creating 8 components:\n";
+  for (int i = 0; i < 8; ++i) {
+    ptrs[i] = pool.create(i, i * 0.5f);
+    std::cout << "  Created [" << i << "] @ " << static_cast<void*>(ptrs[i])
+              << " (used = " << pool.used() << "/" << pool.capacity() << ")\n";
+  }
+
+  std::cout << "\nDestroying all components:\n";
+  for (int i = 0; i < 8; ++i) {
+    pool.destroy(ptrs[i]);
+    std::cout << "  Freed [" << i << "] @ " << static_cast<void*>(ptrs[i])
+              << " (used = " << pool.used() << "/" << pool.capacity() << ")\n";
+  }
+
+  std::cout << "\nReusing pool (create 3 more):\n";
+  for (int i = 0; i < 3; ++i) {
+    auto* obj = pool.create(i + 100, i * 1.0f);
+    std::cout << "  Created [" << i << "] @ " << static_cast<void*>(obj)
+              << " (used = " << pool.used() << "/" << pool.capacity() << ")\n";
+  }
+
+  std::cout << "\nFinal used: " << pool.used() << " of " << pool.capacity() << "\n";
+}
+
+void demo_5_pool_iterators() {
+  Pool<Component, 8> pool;
+
+  std::cout << "Filling pool:\n";
+  for (int i = 0; i < 5; ++i) {
+    pool.create(i, i * 1.0f);
+  }
+
+  std::cout << "\nIterating (mutable):\n";
+  for (Component& c : pool) {
+    std::cout << "  Component(id=" << c.id << ", value=" << c.value << ")\n";
+    c.value += 10.0f;  // mutate
+  }
+
+  std::cout << "\nIterating (const):\n";
+  const auto& view = pool;
+  for (const Component& c : view) {
+    std::cout << "  Component(id=" << c.id << ", value=" << c.value << ")\n";
+  }
+
+  std::cout << "\nClearing pool...\n";
+  pool.clear();
+
+  std::cout << "Used after clear: " << pool.used() << " of " << pool.capacity() << "\n";
+}
+
 int main() {
-  demo_3_pool_allocator();
+  demo_5_pool_iterators();
 }

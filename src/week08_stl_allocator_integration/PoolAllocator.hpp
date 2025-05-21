@@ -10,6 +10,7 @@
 // the backing buffer remains valid for the lifetime of all moved-from and
 // moved-to instances.
 class PoolAllocator {
+ public:
   struct Slot {
     Slot* next;
     alignas(std::max_align_t) std::byte userData[1];  // marker for where user memory begins
@@ -115,6 +116,12 @@ class PoolAllocator {
   size_t slotSize() const { return _slotSize; }
   size_t capacity() const { return _capacity; }
   size_t used() const { return _usedCount; }
+
+  size_t indexOf(void* ptr) const {
+    auto* slotStart = reinterpret_cast<std::byte*>(ptr) - _slotHeaderSize;
+    size_t offset = static_cast<size_t>(slotStart - _buffer);
+    return offset / _slotSize;
+  }
 
  private:
   std::byte* _buffer;

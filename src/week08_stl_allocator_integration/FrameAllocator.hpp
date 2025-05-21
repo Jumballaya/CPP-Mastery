@@ -5,6 +5,10 @@
 #include <cstdlib>
 #include <stdexcept>
 
+//
+//  Doesn't work too well with std containers that do a lot of moving/copying
+//  This is meant to be a backing for a pool of data objects (like components
+//  or particles, etc.)
 class FrameAllocator {
  public:
   FrameAllocator(std::byte* buffer, size_t capacity)
