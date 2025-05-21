@@ -1,3 +1,5 @@
+#include <array>
+#include <cstring>
 #include <iostream>
 #include <memory_resource>
 #include <string>
@@ -5,6 +7,8 @@
 
 #include "FrameAllocator.hpp"
 #include "FrameResource.hpp"
+#include "PoolAllocator.hpp"
+#include "PoolResource.hpp"
 
 void demo_1_frame_allocator() {
   constexpr size_t bufferSize = 1024;
@@ -62,6 +66,36 @@ void demo_2_nested_vectors() {
   std::cout << "Used bytes after reset: " << allocator.used() << "\n";
 }
 
+void demo_3_pool_allocator() {
+  using T = std::array<uint8_t, 32>;
+  constexpr size_t capacity = 8;
+  constexpr size_t slotSize = PoolAllocator::slotSizeFor<T>();
+
+  alignas(std::max_align_t) std::byte buffer[slotSize * capacity];
+  PoolAllocator pool(buffer, slotSize, capacity);
+
+  void* ptrs[capacity];
+
+  std::cout << "Manual allocation test (no STL):\n";
+
+  for (size_t i = 0; i < capacity; ++i) {
+    ptrs[i] = pool.allocate();
+    std::memset(ptrs[i], static_cast<int>(i), sizeof(T));
+    std::cout << "  Allocated[" << i << "]: " << ptrs[i]
+              << " (used = " << pool.used() << "/" << pool.capacity() << ")\n";
+  }
+
+  std::cout << "\nNow deallocating:\n";
+
+  for (size_t i = 0; i < capacity; ++i) {
+    pool.deallocate(ptrs[i]);
+    std::cout << "  Freed[" << i << "]: " << ptrs[i]
+              << " (used = " << pool.used() << "/" << pool.capacity() << ")\n";
+  }
+
+  std::cout << "\nDone.\n";
+}
+
 int main() {
-  demo_2_nested_vectors();
+  demo_3_pool_allocator();
 }

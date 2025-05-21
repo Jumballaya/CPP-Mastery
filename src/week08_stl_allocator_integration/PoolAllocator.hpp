@@ -10,24 +10,30 @@
 // the backing buffer remains valid for the lifetime of all moved-from and
 // moved-to instances.
 class PoolAllocator {
+  struct Slot {
+    Slot* next;
+    alignas(std::max_align_t) std::byte userData[1];  // marker for where user memory begins
+  };
+
  public:
   PoolAllocator(std::byte* buffer, size_t slotSize, size_t capacity)
       : _buffer(buffer), _slotSize(slotSize), _capacity(capacity), _usedCount(0) {
     // This is all to make sure that the buffer and the slotSize are properly
     // aligned
+
     assert(buffer != nullptr);
     assert(reinterpret_cast<uintptr_t>(_buffer) % alignof(std::max_align_t) == 0);
-    assert(_slotSize >= sizeof(void*));
+    assert(_slotSize >= _slotHeaderSize);
     assert(_slotSize % alignof(std::max_align_t) == 0);
 
     for (size_t i = 0; i < capacity - 1; ++i) {
-      std::byte* cur = buffer + i * slotSize;
-      std::byte* next = buffer + (i + 1) * slotSize;
-      *reinterpret_cast<void**>(cur) = next;
+      auto cur = reinterpret_cast<Slot*>(buffer + i * slotSize);
+      auto next = reinterpret_cast<Slot*>(buffer + (i + 1) * slotSize);
+      cur->next = next;
     }
-    void* last = _buffer + (_capacity - 1) * _slotSize;
-    *reinterpret_cast<void**>(last) = nullptr;
-    _freeListHead = buffer;
+    auto* last = reinterpret_cast<Slot*>(buffer + (capacity - 1) * slotSize);
+    last->next = nullptr;
+    _freeListHead = reinterpret_cast<Slot*>(buffer);
   }
 
   ~PoolAllocator() = default;
@@ -63,34 +69,46 @@ class PoolAllocator {
     return *this;
   }
 
+  template <typename T>
+  static constexpr size_t slotSizeFor() {
+    return align_up(offsetof(Slot, userData) + sizeof(T), alignof(std::max_align_t));
+  }
+
   void* allocate() {
     assert(_usedCount < _capacity);
     if (_freeListHead == nullptr) {
       return nullptr;
     }
-    void* result = _freeListHead;
-    _freeListHead = *reinterpret_cast<void**>(_freeListHead);  // move to the next
-    _usedCount++;
-    return result;
+
+    Slot* slot = _freeListHead;
+    _freeListHead = slot->next;
+    ++_usedCount;
+    void* ptr = userFromSlot(slot);
+    std::cout << "Allocated: " << ptr << " from slot: " << static_cast<void*>(slot) << ", next: " << static_cast<void*>(slot->next) << "\n";
+
+    return ptr;
   }
 
   void deallocate(void* ptr) {
+    Slot* slot = slotFromUser(ptr);
     assert(owns(ptr));
 
     // Put the deallocated block at the front of the free list
     // and have it point to the previous head of the free list
-    *reinterpret_cast<void**>(ptr) = _freeListHead;
-    _freeListHead = ptr;
-    _usedCount--;
+    slot->next = _freeListHead;
+    _freeListHead = slot;
+    --_usedCount;
   }
 
   bool owns(void* ptr) const {
-    // check if the ptr is in range and that it is properly aligned
+    // check if the ptr's slot is in range and that it is properly aligned
+    auto* slotPtr = reinterpret_cast<std::byte*>(ptr) - _slotHeaderSize;
     uintptr_t base = reinterpret_cast<uintptr_t>(_buffer);
-    uintptr_t p = reinterpret_cast<uintptr_t>(ptr);
+    uintptr_t p = reinterpret_cast<uintptr_t>(slotPtr);
     uintptr_t offset = p - base;
 
-    return (ptr >= _buffer) && (ptr < _buffer + (_slotSize * _capacity)) &&
+    return (slotPtr >= _buffer) &&
+           (slotPtr < _buffer + (_slotSize * _capacity)) &&
            (offset % _slotSize == 0);
   }
 
@@ -103,5 +121,19 @@ class PoolAllocator {
   size_t _slotSize;
   size_t _capacity;
   size_t _usedCount;
-  void* _freeListHead;
+  Slot* _freeListHead;
+
+  static constexpr size_t _slotHeaderSize = offsetof(Slot, userData);
+
+  std::byte* userFromSlot(Slot* s) const {
+    return reinterpret_cast<std::byte*>(s) + _slotHeaderSize;
+  }
+
+  Slot* slotFromUser(void* user) const {
+    return reinterpret_cast<Slot*>(reinterpret_cast<std::byte*>(user) - _slotHeaderSize);
+  }
+
+  static constexpr size_t align_up(size_t size, size_t alignment) {
+    return (size + alignment - 1) & ~(alignment - 1);
+  }
 };
