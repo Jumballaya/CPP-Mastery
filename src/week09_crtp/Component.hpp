@@ -8,11 +8,8 @@
 template <typename T>
 class Component {
  public:
-  static ComponentId typeId() { return TypeId<T>(); }
+  static ComponentId typeId() { return GetComponentId<T>(); }
 
-  static constexpr std::string_view name() { return typeName; }
+  static constexpr std::string_view name() { return T::typeName; }
   static constexpr size_t sizeBytes() { return sizeof(T); }
-
- private:
-  static constexpr std::string_view typeName = "TYPENAME";
 };
