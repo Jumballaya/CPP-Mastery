@@ -96,8 +96,8 @@ I also learned to avoid misuse of `memcpy` on anything with ownership: I now rel
 ## What I’d Improve
 
 - **TrackedVector**: Move away from `memcpy`, use smart pointer containers or iterators.
-- **ConstexprView**: Revisit design : very limited benefit right now, but a good exploration of `constexpr`.
-- **UndoableEntity**: Support nested fields or composed undo trees : possibly add serialization hooks later.
+- **ConstexprView**: Revisit design it is very limited benefit right now.
+- **UndoableEntity**: Support nested fields or composed undo trees and possibly add serialization hooks later.
 - **General**: Move away from raw pointers as much as possible. This month was about ownership, including pointers, but in the future smart pointers seem like the way to go.
 
 ## Closing Thought
