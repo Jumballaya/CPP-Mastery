@@ -1,21 +1,47 @@
 #pragma once
 
+#include <cstddef>
+#include <iostream>
+#include <memory_resource>
 #include <unordered_map>
 
 #include "EntityId.hpp"
 
-template <typename T>
-class ComponentStorage {
+class IComponentStorage {
  public:
-  void insert(EntityId entityId, const T& component) {
-    _components[entityId] = component;
+  virtual ~IComponentStorage() = default;
+  virtual void debugPrint() = 0;
+  virtual void remove(EntityId entity) = 0;
+  virtual bool has(EntityId entity) const = 0;
+  virtual void clear() = 0;
+  virtual size_t size() const = 0;
+};
+
+template <typename T>
+class ComponentStorage : public IComponentStorage {
+ public:
+  ComponentStorage(std::pmr::memory_resource* resource = std::pmr::get_default_resource()) : _resource(resource) {}
+
+  ~ComponentStorage() = default;
+  ComponentStorage(const ComponentStorage& other) noexcept = delete;
+  ComponentStorage(ComponentStorage&& other) noexcept = delete;
+  ComponentStorage& operator=(const ComponentStorage& other) noexcept = delete;
+  ComponentStorage& operator=(ComponentStorage&& other) noexcept = delete;
+
+  void debugPrint() override {
+    std::cout << "ComponentStorage<" << T::name() << ">: " << _components.size() << " entities";
   }
 
-  void remove(EntityId entity) {
+  template <typename... Args>
+  T& emplace(EntityId entity, Args&&... args) {
+    return _components.try_emplace(entity, std::forward<Args>(args)...).first->second;
+  }
+
+  void remove(EntityId entity) override {
     _components.erase(entity);
   }
 
-  bool has(EntityId entity) {
+  bool has(EntityId entity) const override {
     return _components.find(entity) != _components.end();
   }
 
@@ -29,6 +55,17 @@ class ComponentStorage {
     return it != _components.end() ? &it->second : nullptr;
   }
 
+  template <typename Fn>
+  void forEach(Fn&& fn) {
+    for (auto& [entity, component] : _components) {
+      fn(entity, component);
+    }
+  }
+
+  void clear() override { _components.clear(); }
+  size_t size() const override { return _components.size(); }
+
  private:
-  std::unordered_map<EntityId, T> _components;
+  std::pmr::unordered_map<EntityId, T> _components;
+  std::pmr::memory_resource* _resource;
 };

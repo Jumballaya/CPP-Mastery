@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "ComponentManager.hpp"
 #include "ComponentRegistry.hpp"
 #include "ComponentStorage.hpp"
 #include "EntityId.hpp"
@@ -57,14 +58,14 @@ void demo_2_storage() {
   ComponentStorage<Velocity> velStore;
   ComponentStorage<Health> healthStore;
 
-  transStore.insert(e0, Transform{
-                            .translation = {0.0f, 0.0f, 0.0f},
-                            .rotation = {3.14f, 0.0f, 0.0f, 0.0f},
-                            .scale = {0.0f, 0.0f, 0.0f},
-                        });
+  transStore.emplace(e0, Transform{
+                             .translation = {0.0f, 0.0f, 0.0f},
+                             .rotation = {3.14f, 0.0f, 0.0f, 0.0f},
+                             .scale = {0.0f, 0.0f, 0.0f},
+                         });
 
-  velStore.insert(e1, Velocity{.x = 6.123f, .y = 0.0f, .z = 0.0f});
-  healthStore.insert(e2, Health{.amount = 101.3f});
+  velStore.emplace(e1, Velocity{.x = 6.123f, .y = 0.0f, .z = 0.0f});
+  healthStore.emplace(e2, Health{.amount = 101.3f});
 
   if (transStore.has(e0)) {
     auto trans = transStore.get(e0);
@@ -97,6 +98,64 @@ void demo_2_storage() {
   }
 }
 
+void demo_3_manager() {
+  ComponentRegistry registry;
+  registry.registerComponent<Transform>("Transform");
+  registry.registerComponent<Velocity>("Velocity");
+  registry.registerComponent<Health>("Health");
+
+  ComponentManager manager;
+  manager.registerStorage<Transform>();
+  manager.registerStorage<Velocity>();
+  manager.registerStorage<Health>();
+
+  EntityId e0 = 0;
+  EntityId e1 = 1;
+  EntityId e2 = 2;
+
+  manager.emplace<Transform>(e0, Transform{
+                                     .translation = {0.0f, 0.0f, 0.0f},
+                                     .rotation = {3.14f, 0.0f, 0.0f, 0.0f},
+                                     .scale = {0.0f, 0.0f, 0.0f},
+                                 });
+
+  manager.emplace<Velocity>(e1, Velocity{.x = 6.123f, .y = 0.0f, .z = 0.0f});
+  manager.emplace<Health>(e2, Health{.amount = 101.3f});
+
+  manager.debugPrintAll();
+  manager.debugPrint<Velocity>();
+
+  if (manager.has<Transform>(e0)) {
+    auto trans = manager.get<Transform>(e0);
+    std::cout << "Component: " << Transform::name() << ", size: " << Transform::sizeBytes() << "\n"
+              << "rotation.x: " << trans->rotation[0] << std::endl;
+  }
+
+  if (manager.has<Transform>(e1)) {
+    std::cout << "Error!!! transStore does not have e1!!!" << std::endl;
+  }
+
+  if (manager.has<Velocity>(e1)) {
+    auto vel = manager.get<Velocity>(e1);
+    std::cout << "Component: " << Velocity::name() << ", size: " << Velocity::sizeBytes() << "\n"
+              << "x: " << vel->x << std::endl;
+  }
+
+  if (manager.has<Velocity>(e2)) {
+    std::cout << "Error!!! velStore does not have e2!!!" << std::endl;
+  }
+
+  if (manager.has<Health>(e2)) {
+    auto hp = manager.get<Health>(e2);
+    std::cout << "Component: " << Health::name() << ", size: " << Health::sizeBytes() << "\n"
+              << "amount: " << hp->amount << std::endl;
+  }
+
+  if (manager.has<Health>(e0)) {
+    std::cout << "Error!!! healthStore does not have e0!!!" << std::endl;
+  }
+}
+
 int main() {
-  demo_2_storage();
+  demo_3_manager();
 }
