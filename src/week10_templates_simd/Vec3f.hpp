@@ -5,7 +5,10 @@
 #include <cstddef>
 #include <type_traits>
 
-struct alignas(16) Vec3f {
+#include "Vec3fOps.hpp"
+#include "VecExpr.hpp"
+
+struct alignas(16) Vec3f : public VecExpr<Vec3f> {
   float x;
   float y;
   float z;
@@ -14,6 +17,19 @@ struct alignas(16) Vec3f {
   Vec3f() : x(0.0f), y(0.0f), z(0.0f) {}
   Vec3f(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
   ~Vec3f() = default;
+
+  template <typename Expr>
+  Vec3f(const VecExpr<Expr>& expr) {
+    store(expr.evaluate());
+  }
+
+  template <typename Expr>
+  Vec3f& operator=(const VecExpr<Expr>& expr) {
+    store(expr.evaluate());
+    return *this;
+  }
+
+  // SIMD Stuff
 
   static Vec3f fromSIMD(__m128 v) {
     Vec3f result;
