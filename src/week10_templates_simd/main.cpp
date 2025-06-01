@@ -52,6 +52,13 @@ void demo_5_vec3f_dot_product() {
   std::cout << "dot: " << d << "\n";
 }
 
+void demo_6_vec3f_normalized() {
+  Vec3f v(3, 0, 4);
+  std::cout << "length: " << v.length() << "\n";
+  Vec3f vn = v.normalize();
+  std::cout << "Normalized: < " << vn.x << ", " << vn.y << ", " << vn.z << " >" << std::endl;
+}
+
 int main() {
-  demo_5_vec3f_dot_product();
+  demo_6_vec3f_normalized();
 }
