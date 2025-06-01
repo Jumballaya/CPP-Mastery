@@ -18,6 +18,10 @@ struct alignas(16) Vec3f : public VecExpr<Vec3f> {
   Vec3f(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
   ~Vec3f() = default;
 
+  void print(const char* label = "") const {
+    std::cout << label << ": <" << x << ", " << y << ", " << z << ">\n";
+  }
+
   template <typename Expr>
   Vec3f(const VecExpr<Expr>& expr) {
     store(expr.evaluate());
