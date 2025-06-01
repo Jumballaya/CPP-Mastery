@@ -2,6 +2,8 @@
 
 #include <xmmintrin.h>
 
+#include <type_traits>
+
 #include "VecExpr.hpp"
 
 template <typename L, typename R>
@@ -41,23 +43,32 @@ inline VecMulExpr<L, R> operator*(const VecExpr<L>& lhs, const VecExpr<R>& rhs) 
 template <typename T, typename S>
 struct VecMulScalarExpr : public VecExpr<VecMulScalarExpr<T, S>> {
   const T& expr;
-  const S& scalar;
+  S scalar;
 
   VecMulScalarExpr(const T& e, S s) : expr(e), scalar(s) {}
 
   inline __m128 evaluate() const {
-    __m128 v = expr.evaluate();
-    __m128 s = _mm_set1_ps(scalar);  // set the scalar on all channels
-    return _mm_mul_ps(v, s);
+    return _mm_mul_ps(expr.evaluate(), _mm_set1_ps(scalar));
   }
 };
 
-template <typename T, typename S>
-inline VecMulScalarExpr<T, S> operator*(const VecExpr<T>& expr, S scalar) {
-  return VecMulScalarExpr<T, S>(static_cast<const T&>(expr), scalar);
+// vector * scalar
+// This use of type_traits is to make sure that the compiler can
+// correctly infer the correct types, and not try to use the
+// VecMulExpr from above
+template <typename T,
+          typename S,
+          typename = std::enable_if_t<
+              std::is_base_of_v<VecExpr<T>, T> && std::is_arithmetic_v<S>>>
+inline VecMulScalarExpr<T, S> operator*(const T& expr, S scalar) {
+  return VecMulScalarExpr<T, S>(expr, scalar);
 }
 
-template <typename T, typename S>
-inline VecMulScalarExpr<T, S> operator*(S scalar, const VecExpr<T>& rhs) {
-  return VecMulScalarExpr<T, S>(static_cast<const T&>(rhs), scalar);
+// scalar * vector
+template <typename S,
+          typename T,
+          typename = std::enable_if_t<
+              std::is_base_of_v<VecExpr<T>, T> && std::is_arithmetic_v<S>>>
+inline VecMulScalarExpr<T, S> operator*(S scalar, const T& expr) {
+  return VecMulScalarExpr<T, S>(expr, scalar);
 }

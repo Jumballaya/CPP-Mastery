@@ -36,6 +36,22 @@ void demo_3_vec3f_mult() {
   std::cout << "V4: < " << v4.x << ", " << v4.y << ", " << v4.z << " >" << std::endl;
 }
 
+void demo_4_vec3f_scalar_mult() {
+  Vec3f v1(1.0f, 2.0f, 3.0f);
+  Vec3f v2 = v1 * 10.0f;
+
+  std::cout << "V1: < " << v1.x << ", " << v1.y << ", " << v1.z << " >" << std::endl;
+  std::cout << "V2: < " << v2.x << ", " << v2.y << ", " << v2.z << " >" << std::endl;
+}
+
+void demo_5_vec3f_dot_product() {
+  Vec3f a(1, 2, 3);
+  Vec3f b(4, 5, 6);
+
+  float d = a.dot(b);
+  std::cout << "dot: " << d << "\n";
+}
+
 int main() {
-  demo_3_vec3f_mult();
+  demo_5_vec3f_dot_product();
 }
