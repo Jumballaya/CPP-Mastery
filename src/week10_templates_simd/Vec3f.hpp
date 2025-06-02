@@ -5,10 +5,10 @@
 #include <cstddef>
 #include <type_traits>
 
+#include "SimdExpr.hpp"
 #include "Vec3fOps.hpp"
-#include "VecExpr.hpp"
 
-struct alignas(16) Vec3f : public VecExpr<Vec3f> {
+struct alignas(16) Vec3f : public SimdExpr<Vec3f> {
   float x;
   float y;
   float z;
@@ -23,12 +23,12 @@ struct alignas(16) Vec3f : public VecExpr<Vec3f> {
   }
 
   template <typename Expr>
-  Vec3f(const VecExpr<Expr>& expr) {
+  Vec3f(const SimdExpr<Expr>& expr) {
     store(expr.evaluate());
   }
 
   template <typename Expr>
-  Vec3f& operator=(const VecExpr<Expr>& expr) {
+  Vec3f& operator=(const SimdExpr<Expr>& expr) {
     store(expr.evaluate());
     return *this;
   }
@@ -62,7 +62,7 @@ struct alignas(16) Vec3f : public VecExpr<Vec3f> {
   //    4. Extract that sum value from lane 0
   //
   template <typename Expr>
-  float dot(const VecExpr<Expr>& other) const {
+  float dot(const SimdExpr<Expr>& other) const {
     __m128 va = load();
     __m128 vb = other.evaluate();
     __m128 prod = _mm_mul_ps(va, vb);                            // [x*x', y*y', z*z', _]

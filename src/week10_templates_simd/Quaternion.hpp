@@ -6,7 +6,9 @@
 #include <cmath>
 #include <iostream>
 
-struct alignas(16) Quaternion {
+#include "SimdExpr.hpp"
+
+struct alignas(16) Quaternion : public SimdExpr<Quaternion> {
   union {
     struct {
       float x, y, z, w;
@@ -17,6 +19,11 @@ struct alignas(16) Quaternion {
   Quaternion() : x(0), y(0), z(0), w(1) {}
   Quaternion(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
   Quaternion(__m128 simd) : simd(simd) {}
+
+  template <typename Expr>
+  Quaternion(const SimdExpr<Expr>& expr) {
+    simd = expr.evaluate();
+  }
 
   inline Quaternion operator*(const Quaternion& rhs) const {
     const float x1 = x, y1 = y, z1 = z, w1 = w;
