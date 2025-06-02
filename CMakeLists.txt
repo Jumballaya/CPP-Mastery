@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_compile_options(-fconcepts)
+add_compile_options(-msse3)
 
 add_subdirectory(src/week01_resource_manager)
 add_subdirectory(src/week02_tracked_object)

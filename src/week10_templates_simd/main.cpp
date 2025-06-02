@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "Quaternion.hpp"
 #include "Vec3f.hpp"
 
 void demo_1_vec3f() {
@@ -55,6 +56,17 @@ void demo_6_vec3f_normalized() {
   vn.print("Normalized");
 }
 
+void demo_7_quaternion_length_normalize() {
+  Quaternion q(1, 2, 3, 4);
+  float len = q.length();
+  Quaternion norm = q.normalize();
+
+  q.print("q");
+  std::cout << "length: " << len << "\n";
+  norm.print("normalized q");
+  std::cout << "normalized length: " << norm.length() << "\n";
+}
+
 int main() {
-  demo_6_vec3f_normalized();
+  demo_7_quaternion_length_normalize();
 }
