@@ -75,6 +75,13 @@ void demo_8_quaternion_conjugate() {
   qc.print("q_conjugate");
 }
 
+void demo_8_quaternion_multiplication() {
+  Quaternion a(1, 2, 3, 4);
+  Quaternion b(5, 6, 7, 8);
+  Quaternion c = a * b;
+  c.print("c = a * b");
+}
+
 int main() {
-  demo_8_quaternion_conjugate();
+  demo_8_quaternion_multiplication();
 }

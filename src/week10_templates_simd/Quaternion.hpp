@@ -18,6 +18,17 @@ struct alignas(16) Quaternion {
   Quaternion(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
   Quaternion(__m128 simd) : simd(simd) {}
 
+  inline Quaternion operator*(const Quaternion& rhs) const {
+    const float x1 = x, y1 = y, z1 = z, w1 = w;
+    const float x2 = rhs.x, y2 = rhs.y, z2 = rhs.z, w2 = rhs.w;
+
+    return Quaternion(
+        w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2,
+        w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2,
+        w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2,
+        w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2);
+  }
+
   // Load/store helpers
   inline __m128 load() const { return simd; }
   inline void store(__m128 value) { simd = value; }
