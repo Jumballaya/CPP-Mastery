@@ -67,6 +67,14 @@ void demo_7_quaternion_length_normalize() {
   std::cout << "normalized length: " << norm.length() << "\n";
 }
 
+void demo_8_quaternion_conjugate() {
+  Quaternion q(1, 2, 3, 4);
+  Quaternion qc = q.conjugate();
+
+  q.print("q");
+  qc.print("q_conjugate");
+}
+
 int main() {
-  demo_7_quaternion_length_normalize();
+  demo_8_quaternion_conjugate();
 }

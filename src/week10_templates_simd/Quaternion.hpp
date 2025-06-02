@@ -43,4 +43,20 @@ struct alignas(16) Quaternion {
     __m128 scaled = _mm_mul_ps(simd, _mm_set1_ps(invLen));
     return Quaternion(scaled);
   }
+
+  //
+  //  The Quaternion conjugate negates the imaginary vector (x,y,z) and
+  //  leave the scalar part (w) untouched.
+  //  This is commonly used in quaternion inverse and vector rotation.
+  //
+  //    SIMD plan:
+  //      Create an __m128 mask of negative zeros (except the w) and then XOR
+  //      the quaternion __m128 value against it to flip the sign bit on
+  //      the x/y/z values.
+  //
+  inline Quaternion conjugate() const {
+    const __m128 conjMask = _mm_set_ps(+0.0f, -0.0f, -0.0f, -0.0f);
+    __m128 conj = _mm_xor_ps(simd, conjMask);
+    return Quaternion(conj);
+  }
 };
