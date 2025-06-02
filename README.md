@@ -12,7 +12,7 @@ To transition into a professional game engine development role by mastering C++ 
 
 ## Current Focus
 
-Currently building foundational C++ systems focused on ownership, RAII, and memory safety : including custom smart pointers, rollback guards, and lifetime tracking. This forms the base of more advanced systems like allocators and ECS in the coming weeks.
+I am currently focused on learning to use the `Expression Template` pattern as well as `SIMD`. I am currently writing some simple Math structs like `Vec3f`, `Quaternion` and `Mat4f`.
 
 ---
 
