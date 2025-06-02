@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "SimdExpr.hpp"
+#include "Vec3f.hpp"
 
 struct alignas(16) Quaternion : public SimdExpr<Quaternion> {
   union {
@@ -76,5 +77,11 @@ struct alignas(16) Quaternion : public SimdExpr<Quaternion> {
     const __m128 conjMask = _mm_set_ps(+0.0f, -0.0f, -0.0f, -0.0f);
     __m128 conj = _mm_xor_ps(simd, conjMask);
     return Quaternion(conj);
+  }
+
+  inline Vec3f rotate(const Vec3f& v) const {
+    Quaternion vq(v.x, v.y, v.z, 0.0f);
+    Quaternion rotated = (*this) * vq * conjugate();
+    return Vec3f(rotated.x, rotated.y, rotated.z);
   }
 };

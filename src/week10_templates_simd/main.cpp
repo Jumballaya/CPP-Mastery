@@ -75,13 +75,30 @@ void demo_8_quaternion_conjugate() {
   qc.print("q_conjugate");
 }
 
-void demo_8_quaternion_multiplication() {
+void demo_9_quaternion_multiplication() {
   Quaternion a(1, 2, 3, 4);
   Quaternion b(5, 6, 7, 8);
   Quaternion c = a * b;
   c.print("c = a * b");
 }
 
+void demo_10_quaternion_rotate_vec3f() {
+  Vec3f v(1, 0, 0);
+
+  // 90° rotation around Z axis
+  float angleRad = 3.14159265f / 2.0f;
+  float c = std::cos(angleRad / 2.0f);
+  float s = std::sin(angleRad / 2.0f);
+  Quaternion q(0, 0, s, c);  // axis: z, angle: 90 deg
+  Quaternion qn = q.normalize();
+
+  Vec3f result = qn.rotate(v);
+
+  v.print("v");
+  qn.print("q (normalized)");
+  result.print("rotated v");
+}
+
 int main() {
-  demo_8_quaternion_multiplication();
+  demo_10_quaternion_rotate_vec3f();
 }
