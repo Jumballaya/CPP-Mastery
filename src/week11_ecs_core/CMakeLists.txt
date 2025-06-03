@@ -1,0 +1,1 @@
+add_executable(ecs_core main.cpp)
