@@ -1,3 +1,5 @@
+#include <chrono>
+#include <cmath>
 #include <iostream>
 
 #include "Mat4f.hpp"
@@ -102,8 +104,6 @@ void demo_10_quaternion_rotate_vec3f() {
 }
 
 void demo_11_mat4f_mul() {
-  using namespace std;
-
   // Define two simple transform-style matrices (scaling and translation)
   Mat4f A(
       _mm_set_ps(0, 0, 0, 1),   // Row 0
@@ -121,16 +121,140 @@ void demo_11_mat4f_mul() {
   Mat4f C = A * B;
 
   // Print result
-  cout << "Matrix A:\n";
-  A.print();
+  A.print("Matrix A");
+  B.print("Matrix B");
+  C.print("Matrix C = A * B");
+}
 
-  cout << "\nMatrix B:\n";
-  B.print();
+//
+//  SIMD Benchmarking of Vec3f
+//
+struct NaiveVec3f {
+  float x, y, z;
 
-  cout << "\nMatrix C = A * B:\n";
-  C.print();
+  NaiveVec3f() : x(0), y(0), z(0) {}
+  NaiveVec3f(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+
+  NaiveVec3f operator+(const NaiveVec3f& other) const {
+    return NaiveVec3f(x + other.x, y + other.y, z + other.z);
+  }
+
+  NaiveVec3f operator*(const NaiveVec3f& other) const {
+    return NaiveVec3f(x * other.x, y * other.y, z * other.z);
+  }
+
+  NaiveVec3f operator*(float scalar) const {
+    return NaiveVec3f(x * scalar, y * scalar, z * scalar);
+  }
+
+  float dot(const NaiveVec3f& other) const {
+    return x * other.x + y * other.y + z * other.z;
+  }
+
+  float length() const {
+    return std::sqrt(dot(*this));
+  }
+
+  void print(const char* label = "") const {
+    std::cout << label << ": <" << x << ", " << y << ", " << z << ">\n";
+  }
+};
+
+void benchmark_vec3f() {
+  using namespace std::chrono;
+
+  constexpr int iterations = 10'000'000;
+  Vec3f sum(0, 0, 0);
+  Vec3f a(1.0f, 2.0f, 3.0f);
+  Vec3f b(4.0f, 5.0f, 6.0f);
+  float scalar = 0.5f;
+
+  auto start = high_resolution_clock::now();
+  for (int i = 0; i < iterations; ++i) {
+    sum = sum + a * b * scalar;
+  }
+  auto end = high_resolution_clock::now();
+  std::cout << "SIMD Vec3f result:\n";
+  sum.print();
+  std::cout << "Time: "
+            << duration_cast<milliseconds>(end - start).count() << "ms\n";
+}
+
+void benchmark_naivevec3f() {
+  using namespace std::chrono;
+
+  constexpr int iterations = 10'000'000;
+  NaiveVec3f sum(0, 0, 0);
+  NaiveVec3f a(1.0f, 2.0f, 3.0f);
+  NaiveVec3f b(4.0f, 5.0f, 6.0f);
+  float scalar = 0.5f;
+
+  auto start = high_resolution_clock::now();
+  for (int i = 0; i < iterations; ++i) {
+    sum = sum + (a * b * scalar);
+  }
+  auto end = high_resolution_clock::now();
+  std::cout << "NaiveVec3f result:\n";
+  sum.print();
+  std::cout << "Time: "
+            << duration_cast<milliseconds>(end - start).count() << "ms\n";
+}
+
+void benchmark_batched_dot_product_vec3f() {
+  using namespace std::chrono;
+
+  constexpr int iterations = 10'000'000;
+  float sum = 0.0f;
+
+  Vec3f* A = new Vec3f[iterations];
+  Vec3f* B = new Vec3f[iterations];
+  for (int i = 0; i < iterations; ++i) {
+    A[i] = Vec3f(1.0f, 2.0f, 3.0f);
+    B[i] = Vec3f(4.0f, 5.0f, 6.0f);
+  }
+
+  auto start = high_resolution_clock::now();
+  for (int i = 0; i < iterations; ++i) {
+    sum += A[i].dot(B[i]);
+  }
+  auto end = high_resolution_clock::now();
+
+  std::cout << "SIMD Vec3f batched dot product result: " << sum << "\n";
+  std::cout << "Time: " << duration_cast<milliseconds>(end - start).count() << "ms\n";
+
+  delete[] A;
+  delete[] B;
+}
+
+void benchmark_batched_dot_product_naivevec3f() {
+  using namespace std::chrono;
+
+  constexpr int iterations = 10'000'000;
+  float sum = 0.0f;
+
+  NaiveVec3f* A = new NaiveVec3f[iterations];
+  NaiveVec3f* B = new NaiveVec3f[iterations];
+  for (int i = 0; i < iterations; ++i) {
+    A[i] = NaiveVec3f(1.0f, 2.0f, 3.0f);
+    B[i] = NaiveVec3f(4.0f, 5.0f, 6.0f);
+  }
+
+  auto start = high_resolution_clock::now();
+  for (int i = 0; i < iterations; ++i) {
+    sum += A[i].dot(B[i]);
+  }
+  auto end = high_resolution_clock::now();
+
+  std::cout << "NaiveVec3f batched dot product result: " << sum << "\n";
+  std::cout << "Time: " << duration_cast<milliseconds>(end - start).count() << "ms\n";
+
+  delete[] A;
+  delete[] B;
 }
 
 int main() {
-  demo_11_mat4f_mul();
+  benchmark_vec3f();
+  benchmark_naivevec3f();
+  benchmark_batched_dot_product_vec3f();
+  benchmark_batched_dot_product_naivevec3f();
 }
