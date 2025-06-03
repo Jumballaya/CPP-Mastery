@@ -35,7 +35,10 @@ struct VecMulExpr : public SimdExpr<VecMulExpr<L, R>> {
   }
 };
 
-template <typename L, typename R>
+template <typename L, typename R,
+          typename = std::enable_if_t<
+              std::is_same_v<decltype(std::declval<L>().evaluate()), __m128> &&
+              std::is_same_v<decltype(std::declval<R>().evaluate()), __m128>>>
 inline VecMulExpr<L, R> operator*(const SimdExpr<L>& lhs, const SimdExpr<R>& rhs) {
   return VecMulExpr<L, R>(static_cast<const L&>(lhs), static_cast<const R&>(rhs));
 }
@@ -59,7 +62,8 @@ struct VecMulScalarExpr : public SimdExpr<VecMulScalarExpr<T, S>> {
 template <typename T,
           typename S,
           typename = std::enable_if_t<
-              std::is_base_of_v<SimdExpr<T>, T> && std::is_arithmetic_v<S>>>
+              std::is_base_of_v<SimdExpr<T>, T> && std::is_arithmetic_v<S>,
+              VecMulScalarExpr<T, S>>>
 inline VecMulScalarExpr<T, S> operator*(const T& expr, S scalar) {
   return VecMulScalarExpr<T, S>(expr, scalar);
 }
@@ -68,7 +72,8 @@ inline VecMulScalarExpr<T, S> operator*(const T& expr, S scalar) {
 template <typename S,
           typename T,
           typename = std::enable_if_t<
-              std::is_base_of_v<SimdExpr<T>, T> && std::is_arithmetic_v<S>>>
-inline VecMulScalarExpr<T, S> operator*(S scalar, const T& expr) {
-  return VecMulScalarExpr<T, S>(expr, scalar);
+              std::is_base_of_v<SimdExpr<T>, T> && std::is_arithmetic_v<S>,
+              VecMulScalarExpr<S, T>>>
+inline VecMulScalarExpr<S, T> operator*(S scalar, const T& expr) {
+  return VecMulScalarExpr<S, T>(expr, scalar);
 }

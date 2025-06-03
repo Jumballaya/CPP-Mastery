@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include "Mat4f.hpp"
+#include "Mat4fOps.hpp"
 #include "Quaternion.hpp"
 #include "Vec3f.hpp"
 
@@ -99,6 +101,36 @@ void demo_10_quaternion_rotate_vec3f() {
   result.print("rotated v");
 }
 
+void demo_11_mat4f_mul() {
+  using namespace std;
+
+  // Define two simple transform-style matrices (scaling and translation)
+  Mat4f A(
+      _mm_set_ps(0, 0, 0, 1),   // Row 0
+      _mm_set_ps(0, 0, 2, 0),   // Row 1
+      _mm_set_ps(0, 3, 0, 0),   // Row 2
+      _mm_set_ps(4, 0, 0, 1));  // Row 3
+
+  Mat4f B(
+      _mm_set_ps(0, 0, 0, 1),   // Row 0
+      _mm_set_ps(0, 0, 1, 0),   // Row 1
+      _mm_set_ps(0, 1, 0, 0),   // Row 2
+      _mm_set_ps(2, 0, 0, 1));  // Row 3
+
+  // Multiply using expression templates (lazy)
+  Mat4f C = A * B;
+
+  // Print result
+  cout << "Matrix A:\n";
+  A.print();
+
+  cout << "\nMatrix B:\n";
+  B.print();
+
+  cout << "\nMatrix C = A * B:\n";
+  C.print();
+}
+
 int main() {
-  demo_10_quaternion_rotate_vec3f();
+  demo_11_mat4f_mul();
 }
