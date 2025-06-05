@@ -5,7 +5,7 @@
 #include <memory_resource>
 #include <unordered_map>
 
-#include "EntityId.hpp"
+#include "../entity/EntityId.hpp"
 
 class IComponentStorage {
  public:

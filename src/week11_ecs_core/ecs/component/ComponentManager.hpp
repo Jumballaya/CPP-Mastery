@@ -4,6 +4,7 @@
 #include <memory>
 #include <unordered_map>
 
+#include "../entity/EntityId.hpp"
 #include "ComponentId.hpp"
 #include "ComponentStorage.hpp"
 
