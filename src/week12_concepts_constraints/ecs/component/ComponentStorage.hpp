@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include "../entity/EntityId.hpp"
+#include "ComponentConcepts.hpp"
 
 class IComponentStorage {
  public:
@@ -17,7 +18,7 @@ class IComponentStorage {
   virtual size_t size() const = 0;
 };
 
-template <typename T>
+template <ComponentType T>
 class ComponentStorage : public IComponentStorage {
  public:
   using MapType = std::pmr::unordered_map<EntityId, T>;

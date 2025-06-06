@@ -1,6 +1,7 @@
 #pragma once
 
 #include "View.hpp"
+#include "component/ComponentConcepts.hpp"
 #include "component/ComponentManager.hpp"
 #include "component/ComponentStorage.hpp"
 #include "entity/EntityId.hpp"
@@ -20,7 +21,7 @@ class World {
     _systemScheduler.update(*this, dt);
   }
 
-  template <typename... Ts>
+  template <ComponentType... Ts>
   View<Ts...> view() {
     return View<Ts...>(_componentManager.storage<Ts>()...);
   }
@@ -29,7 +30,7 @@ class World {
   void destroyEntity(EntityId id) { _entityManager.destroy(id); }
   bool isAlive(EntityId id) const { return _entityManager.isAlive(id); }
 
-  template <typename T, typename... Args>
+  template <ComponentType T, typename... Args>
   void addComponent(EntityId id, Args&&... args) {
     if (!isAlive(id)) {
       return;
@@ -37,7 +38,7 @@ class World {
     _componentManager.emplace<T>(id, std::forward<Args>(args)...);
   }
 
-  template <typename T>
+  template <ComponentType T>
   [[nodiscard]]
   T* getComponent(EntityId id) {
     if (!isAlive(id)) {
@@ -46,7 +47,7 @@ class World {
     return _componentManager.get<T>(id);
   }
 
-  template <typename T>
+  template <ComponentType T>
   bool hasComponent(EntityId id) const {
     if (!isAlive(id)) {
       return false;
@@ -54,7 +55,7 @@ class World {
     return _componentManager.has<T>(id);
   }
 
-  template <typename T>
+  template <ComponentType T>
   void removeComponent(EntityId id) {
     if (!isAlive(id)) {
       return;

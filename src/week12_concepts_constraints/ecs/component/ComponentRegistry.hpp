@@ -4,12 +4,13 @@
 #include <vector>
 
 #include "Component.hpp"
+#include "ComponentConcepts.hpp"
 #include "ComponentId.hpp"
 #include "ComponentInfo.hpp"
 
 class ComponentRegistry {
  public:
-  template <typename T>
+  template <ComponentType T>
   void registerComponent(std::string_view name) {
     ComponentId id = Component<T>::typeId();
 

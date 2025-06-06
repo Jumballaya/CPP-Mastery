@@ -1,10 +1,12 @@
 #pragma once
 
+#include <cassert>
 #include <iostream>
 #include <memory>
 #include <unordered_map>
 
 #include "../entity/EntityId.hpp"
+#include "ComponentConcepts.hpp"
 #include "ComponentId.hpp"
 #include "ComponentStorage.hpp"
 
@@ -17,26 +19,26 @@ class ComponentManager {
     }
   }
 
-  template <typename T>
+  template <ComponentType T>
   void debugPrint() {
     storage<T>().debugPrint();
     std::cout << std::endl;
   }
 
-  template <typename T>
+  template <ComponentType T>
   void registerStorage() {
     ComponentId id = T::typeId();
     if (_storages.count(id)) return;
     _storages[id] = std::make_unique<ComponentStorage<T>>();
   }
 
-  template <typename T, typename... Args>
+  template <ComponentType T, typename... Args>
   T& emplace(EntityId entity, Args&&... args) {
     registerStorage<T>();
     return storage<T>().emplace(entity, std::forward<Args>(args)...);
   }
 
-  template <typename T>
+  template <ComponentType T>
   T* get(EntityId entity) {
     ComponentId id = T::typeId();
     if (!_storages.count(id)) {
@@ -45,12 +47,12 @@ class ComponentManager {
     return storage<T>().get(entity);
   }
 
-  template <typename T>
+  template <ComponentType T>
   bool has(EntityId entity) const {
     return storage<T>().has(entity);
   }
 
-  template <typename T>
+  template <ComponentType T>
   void remove(EntityId entity) {
     storage<T>().remove(entity);
   }
@@ -60,9 +62,10 @@ class ComponentManager {
       storage->clear();
   }
 
-  template <typename T>
+  template <ComponentType T>
   ComponentStorage<T>& storage() const {
     ComponentId id = T::typeId();
+    assert(_storages.contains(id));
     auto* base = _storages.at(id).get();
     return *static_cast<ComponentStorage<T>*>(base);
   }
