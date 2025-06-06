@@ -11,10 +11,10 @@
 class IComponentStorage {
  public:
   virtual ~IComponentStorage() = default;
-  virtual void debugPrint() = 0;
   virtual void remove(EntityId entity) = 0;
   virtual bool has(EntityId entity) const = 0;
   virtual void clear() = 0;
+  virtual void cloneComponent(EntityId from, EntityId to) = 0;
   virtual size_t size() const = 0;
 };
 
@@ -32,10 +32,6 @@ class ComponentStorage : public IComponentStorage {
   ComponentStorage(ComponentStorage&& other) noexcept = delete;
   ComponentStorage& operator=(const ComponentStorage& other) noexcept = delete;
   ComponentStorage& operator=(ComponentStorage&& other) noexcept = delete;
-
-  void debugPrint() override {
-    std::cout << "ComponentStorage<" << T::name() << ">: " << _components.size() << " entities";
-  }
 
   template <typename... Args>
   T& emplace(EntityId entity, Args&&... args) {
@@ -65,6 +61,11 @@ class ComponentStorage : public IComponentStorage {
     for (auto& [entity, component] : _components) {
       fn(entity, component);
     }
+  }
+
+  void cloneComponent(EntityId from, EntityId to) override {
+    if (!has(from)) return;
+    _components[to] = _components[from];
   }
 
   void clear() override { _components.clear(); }

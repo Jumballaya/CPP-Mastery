@@ -24,6 +24,12 @@ class ComponentRegistry {
     }
   }
 
+  void forEachRegisteredComponent(auto&& fn) {
+    for (ComponentId id = 0; id < _components.size(); ++id) {
+      if (_components[id]) fn(id);
+    }
+  }
+
   const ComponentInfo* getInfo(ComponentId id) const {
     if (id >= _components.size()) return nullptr;
     return &_components[id];

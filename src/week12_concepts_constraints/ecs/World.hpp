@@ -11,6 +11,7 @@
 #include "View.hpp"
 #include "component/ComponentConcepts.hpp"
 #include "component/ComponentManager.hpp"
+#include "component/ComponentRegistry.hpp"
 #include "component/ComponentStorage.hpp"
 #include "entity/EntityId.hpp"
 #include "entity/EntityManager.hpp"
@@ -35,8 +36,19 @@ class World {
     return View<Ts...>(_componentManager.storage<Ts>()...);
   }
 
-  EntityId createEntity() { return _entityManager.create(); }
-  bool isAlive(EntityId id) const { return _entityManager.isAlive(id); }
+  EntityId createEntity() {
+    return _entityManager.create();
+  }
+
+  EntityId createEntity(std::string_view tag) {
+    EntityId id = createEntity();
+    addTag(id, tag);
+    return id;
+  }
+
+  bool isAlive(EntityId id) const {
+    return _entityManager.isAlive(id);
+  }
 
   void destroyEntity(EntityId id) {
     if (!isAlive(id)) return;
@@ -50,6 +62,27 @@ class World {
     }
 
     _entityManager.destroy(id);
+  }
+
+  EntityId cloneEntity(EntityId src) {
+    if (!isAlive(src)) return EntityId{};
+    EntityId dst = createEntity();
+
+    const auto& tags = getTags(src);
+    for (TagSymbol tag : tags) {
+      _tagToEntities[tag].insert(dst);
+      _entityToTags[dst].insert(tag);
+    }
+
+    _registry.forEachRegisteredComponent([&](ComponentId id) {
+      auto* base = _componentManager.rawStorage(id);
+      if (!base) return;
+
+      if (base->has(src)) {
+        base->cloneComponent(src, dst);
+      }
+    });
+    return dst;
   }
 
   void addTag(EntityId id, std::string_view tag) {
@@ -74,12 +107,29 @@ class World {
     }
   }
 
+  void clearTags(EntityId id) {
+    if (!isAlive(id)) return;
+    auto it = _entityToTags.find(id);
+    if (it == _entityToTags.end()) return;
+
+    for (TagSymbol tag : it->second) {
+      _tagToEntities[tag].erase(id);
+    }
+
+    _entityToTags.erase(it);
+  }
+
   bool hasTag(EntityId id, std::string_view tag) const {
     if (!isAlive(id)) return false;
     TagSymbol symbol = toTagSymbol(tag);
     auto it = _entityToTags.find(id);
     if (it == _entityToTags.end()) return false;
     return it->second.contains(symbol);
+  }
+
+  void retagEntity(EntityId id, std::string_view tag) {
+    clearTags(id);
+    addTag(id, tag);
   }
 
   const std::unordered_set<EntityId> findWithTag(std::string_view tag) const {
@@ -165,9 +215,25 @@ class World {
     _systemScheduler.registerSystem<T>(std::forward<Args>(args)...);
   }
 
+  template <ComponentType T>
+  void assertComponent(EntityId id) {
+    if (!hasComponent<T>(id)) {
+      throw std::runtime_error(std::string("Missing component: ") + std::string(T::name()));
+    }
+  }
+
+  void validate() const {
+    for (const auto& [id, tags] : _entityToTags) {
+      if (!isAlive(id)) {
+        throw std::runtime_error("Entity has tags but is not alive.");
+      }
+    }
+  }
+
  private:
   EntityManager _entityManager;
   ComponentManager _componentManager;
+  ComponentRegistry _registry;
   SystemScheduler _systemScheduler;
 
   std::unordered_map<TagSymbol, std::unordered_set<EntityId>> _tagToEntities;

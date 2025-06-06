@@ -12,19 +12,6 @@
 
 class ComponentManager {
  public:
-  void debugPrintAll() {
-    for (auto& [id, storage] : _storages) {
-      storage->debugPrint();
-      std::cout << std::endl;
-    }
-  }
-
-  template <ComponentType T>
-  void debugPrint() {
-    storage<T>().debugPrint();
-    std::cout << std::endl;
-  }
-
   template <ComponentType T>
   void registerStorage() {
     ComponentId id = T::typeId();
@@ -68,6 +55,12 @@ class ComponentManager {
     assert(_storages.contains(id));
     auto* base = _storages.at(id).get();
     return *static_cast<ComponentStorage<T>*>(base);
+  }
+
+  IComponentStorage* rawStorage(ComponentId id) const {
+    auto it = _storages.find(id);
+    if (it != _storages.end()) return nullptr;
+    return it->second.get();
   }
 
  private:
