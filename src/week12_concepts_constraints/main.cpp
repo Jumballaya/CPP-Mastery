@@ -19,7 +19,7 @@ struct Velocity : public Component<Velocity> {
 
 class MovementSystem : public System {
  public:
-  void update(World& world, float dt) override {
+   void update(World& world, float dt) override {
     for (auto [id, pos, vel] : world.view<Position, Velocity>()) {
       pos->x += vel->dx * dt;
       pos->y += vel->dy * dt;

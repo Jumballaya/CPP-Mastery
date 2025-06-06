@@ -2,8 +2,6 @@
 
 class World;
 
-// @TODO: change name() to be exactly like Component<T>
-// @TODO: Implement CRTP for static polymorphism
 class System {
  public:
   virtual ~System() = default;
