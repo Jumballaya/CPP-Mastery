@@ -15,6 +15,20 @@ class World {
   World(World&&) noexcept = default;
   World& operator=(World&&) noexcept = default;
 
+  void update(float dt) {
+    _systemScheduler.update(*this, dt);
+  }
+
+  template <typename Fn>
+  void eachEntity(Fn&& fn) {
+    for (uint32_t i = 0; i < _entityManager.capacity(); ++i) {
+      EntityId id{i, _entityManager.generation(i)};
+      if (isAlive(id)) {
+        fn(id);
+      }
+    }
+  }
+
   EntityId createEntity() { return _entityManager.create(); }
   void destroyEntity(EntityId id) { _entityManager.destroy(id); }
   bool isAlive(EntityId id) const { return _entityManager.isAlive(id); }
@@ -24,8 +38,7 @@ class World {
     if (!isAlive(id)) {
       return;
     }
-    ComponentStorage<T>& storage = _componentManager.storage<T>();
-    storage.emplace(id, std::forward<Args>(args)...);
+    _componentManager.emplace<T>(id, std::forward<Args>(args)...);
   }
 
   template <typename T>
@@ -51,6 +64,11 @@ class World {
       return;
     }
     _componentManager.remove<T>(id);
+  }
+
+  template <typename T, typename... Args>
+  void registerSystem(Args&&... args) {
+    _systemScheduler.registerSystem<T>(std::forward<Args>(args)...);
   }
 
  private:

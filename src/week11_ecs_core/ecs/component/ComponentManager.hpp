@@ -32,12 +32,14 @@ class ComponentManager {
 
   template <typename T, typename... Args>
   T& emplace(EntityId entity, Args&&... args) {
+    registerStorage<T>();
     return storage<T>().emplace(entity, std::forward<Args>(args)...);
   }
 
   template <typename T>
   T* get(EntityId entity) {
-    if (!_storages.count(entity)) {
+    ComponentId id = T::typeId();
+    if (!_storages.count(id)) {
       throw std::runtime_error("Storage not registered for component!");
     }
     return storage<T>().get(entity);

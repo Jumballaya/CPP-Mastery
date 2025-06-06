@@ -46,6 +46,14 @@ class EntityManager {
     return _generations[id.index] == id.generation;
   }
 
+  uint32_t capacity() const {
+    return static_cast<uint32_t>(_generations.size());
+  }
+
+  uint32_t generation(uint32_t index) const {
+    return _generations[index];
+  }
+
  private:
   std::vector<uint32_t> _generations;
   std::queue<uint32_t> _freeIndices;
