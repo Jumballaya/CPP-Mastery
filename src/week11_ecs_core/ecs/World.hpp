@@ -1,5 +1,6 @@
 #pragma once
 
+#include "View.hpp"
 #include "component/ComponentManager.hpp"
 #include "component/ComponentStorage.hpp"
 #include "entity/EntityId.hpp"
@@ -19,14 +20,9 @@ class World {
     _systemScheduler.update(*this, dt);
   }
 
-  template <typename Fn>
-  void eachEntity(Fn&& fn) {
-    for (uint32_t i = 0; i < _entityManager.capacity(); ++i) {
-      EntityId id{i, _entityManager.generation(i)};
-      if (isAlive(id)) {
-        fn(id);
-      }
-    }
+  template <typename... Ts>
+  View<Ts...> view() {
+    return View<Ts...>(_componentManager.storage<Ts>()...);
   }
 
   EntityId createEntity() { return _entityManager.create(); }

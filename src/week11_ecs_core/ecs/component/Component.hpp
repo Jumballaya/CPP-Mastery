@@ -5,6 +5,9 @@
 
 #include "ComponentId.hpp"
 
+#define COMPONENT_NAME(name) \
+  static constexpr std::string_view typeName = name
+
 template <typename T>
 class Component {
  public:

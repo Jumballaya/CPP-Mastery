@@ -60,13 +60,13 @@ class ComponentManager {
       storage->clear();
   }
 
- private:
-  std::unordered_map<ComponentId, std::unique_ptr<IComponentStorage>> _storages;
-
   template <typename T>
   ComponentStorage<T>& storage() const {
     ComponentId id = T::typeId();
     auto* base = _storages.at(id).get();
     return *static_cast<ComponentStorage<T>*>(base);
   }
+
+ private:
+  std::unordered_map<ComponentId, std::unique_ptr<IComponentStorage>> _storages;
 };

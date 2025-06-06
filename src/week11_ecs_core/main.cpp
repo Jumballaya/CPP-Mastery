@@ -4,14 +4,14 @@
 #include "ecs/system/System.hpp"
 
 struct Position : public Component<Position> {
-  static constexpr std::string_view typeName = "Position";
+  COMPONENT_NAME("Position");
   Position(float _x, float _y) : x(_x), y(_y) {}
   float x = 0;
   float y = 0;
 };
 
 struct Velocity : public Component<Velocity> {
-  static constexpr std::string_view typeName = "Velocity";
+  COMPONENT_NAME("Velocity");
   Velocity(float _dx, float _dy) : dx(_dx), dy(_dy) {}
   float dx = 0;
   float dy = 0;
@@ -20,16 +20,11 @@ struct Velocity : public Component<Velocity> {
 class MovementSystem : public System {
  public:
   void update(World& world, float dt) override {
-    world.eachEntity([&](EntityId id) {
-      auto* pos = world.getComponent<Position>(id);
-      auto* vel = world.getComponent<Velocity>(id);
-      if (pos && vel) {
-        pos->x += vel->dx * dt;
-        pos->y += vel->dy * dt;
-      }
-    });
+    for (auto [id, pos, vel] : world.view<Position, Velocity>()) {
+      pos->x += vel->dx * dt;
+      pos->y += vel->dy * dt;
+    }
   }
-
   const char* name() const override { return "MovementSystem"; }
 };
 
@@ -49,12 +44,9 @@ void demo_1_simple_ecs() {
   for (int frame = 0; frame < 5; ++frame) {
     std::cout << "Frame " << frame << ":\n";
     world.update(1.0f);
-    world.eachEntity([&](EntityId id) {
-      auto* pos = world.getComponent<Position>(id);
-      if (pos) {
-        std::cout << "Entity " << id.index << " => (" << pos->x << ", " << pos->y << ")\n";
-      }
-    });
+    for (auto [id, pos] : world.view<Position>()) {
+      std::cout << "Entity " << id.index << " => (" << pos->x << ", " << pos->y << ")\n";
+    }
   }
 }
 

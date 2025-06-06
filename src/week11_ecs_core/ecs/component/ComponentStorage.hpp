@@ -20,6 +20,10 @@ class IComponentStorage {
 template <typename T>
 class ComponentStorage : public IComponentStorage {
  public:
+  using MapType = std::pmr::unordered_map<EntityId, T>;
+  MapType::iterator begin() { return _components.begin(); }
+  MapType::iterator end() { return _components.end(); }
+
   ComponentStorage(std::pmr::memory_resource* resource = std::pmr::get_default_resource()) : _resource(resource) {}
 
   ~ComponentStorage() = default;
