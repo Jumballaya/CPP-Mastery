@@ -78,6 +78,39 @@ void demo_2_tags_and_indexed() {
   }
 }
 
+void demo_3_builder_tags() {
+  World world;
+
+  world.registerComponent<Position>();
+  world.registerComponent<Velocity>();
+  world.registerSystem<MovementSystem>();
+
+  for (int i = 0; i < 10; ++i) {
+    auto builder = world.builder();
+
+    builder.with<Position>(float(i), float(i))
+        .with<Velocity>(1.0f, 0.5f);
+
+    if (i % 2 == 0) {
+      builder.tag("enemy");
+    } else {
+      builder.tag("player");
+    }
+
+    builder.build();
+  }
+
+  for (int frame = 0; frame < 5; ++frame) {
+    std::cout << "Frame " << frame << ":\n";
+    world.update(1.0f);
+
+    for (auto [id, pos] : world.view<Position>()) {
+      std::string tag = world[id].hasTag("enemy") ? "enemy" : "player";
+      std::cout << "Entity " << id.index << " (" << tag << ") => (" << pos->x << ", " << pos->y << ")\n";
+    }
+  }
+}
+
 int main() {
-  demo_2_tags_and_indexed();
+  demo_3_builder_tags();
 }

@@ -13,6 +13,7 @@
 #include "component/ComponentManager.hpp"
 #include "component/ComponentRegistry.hpp"
 #include "component/ComponentStorage.hpp"
+#include "entity/EntityBuilder.hpp"
 #include "entity/EntityId.hpp"
 #include "entity/EntityManager.hpp"
 #include "entity/EntityRef.hpp"
@@ -39,6 +40,11 @@ class World {
   template <ComponentType... Ts>
   View<Ts...> view() {
     return View<Ts...>(_componentManager.storage<Ts>()...);
+  }
+
+  EntityBuilder builder() {
+    EntityId id = createEntity();
+    return EntityBuilder(id, *this);
   }
 
   EntityId createEntity() {
@@ -274,4 +280,38 @@ bool EntityRef::has() const {
 template <typename T>
 void EntityRef::remove() {
   world->removeComponent<T>(id);
+}
+
+//
+// For EntityBuilder API
+//
+template <typename T, typename... Args>
+EntityBuilder& EntityBuilder::with(Args&&... args) {
+  auto argsTuple = std::make_tuple(std::forward<Args>(args)...);
+
+  _components.emplace_back(
+      [this, argsTuple = std::move(argsTuple)]() mutable {
+        std::apply([&](auto&&... unpackedArgs) {
+          _world.addComponent<T>(_entity, std::forward<decltype(unpackedArgs)>(unpackedArgs)...);
+        },
+                   std::move(argsTuple));
+      });
+
+  return *this;
+}
+
+template <typename T, typename Fn>
+EntityBuilder& EntityBuilder::with(Fn&& fn)
+  requires std::is_invocable_r_v<void, Fn, T&>
+{
+  auto fnCopy = std::forward<Fn>(fn);
+
+  _components.emplace_back(
+      [this, fnCopy = std::move(fnCopy)]() mutable {
+        T t{};
+        fnCopy(t);
+        _world.addComponent<T>(_entity, std::move(t));
+      });
+
+  return *this;
 }
