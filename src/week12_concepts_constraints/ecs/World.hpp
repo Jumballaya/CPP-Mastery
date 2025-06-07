@@ -15,6 +15,7 @@
 #include "component/ComponentStorage.hpp"
 #include "entity/EntityId.hpp"
 #include "entity/EntityManager.hpp"
+#include "entity/EntityRef.hpp"
 #include "entity/TagSymbol.hpp"
 #include "system/SystemScheduler.hpp"
 
@@ -26,6 +27,10 @@ class World {
   World& operator=(const World&) = delete;
   World(World&&) noexcept = default;
   World& operator=(World&&) noexcept = default;
+
+  EntityRef operator[](EntityId id) {
+    return EntityRef{id, this};
+  }
 
   void update(float dt) {
     _systemScheduler.update(*this, dt);
@@ -177,12 +182,20 @@ class World {
     return it != _entityToTags.end() ? it->second : empty;
   }
 
+  template <ComponentType T>
+  void registerComponent() {
+    this->_componentManager.registerStorage<T>();
+  }
+
   template <ComponentType T, typename... Args>
-  void addComponent(EntityId id, Args&&... args) {
-    if (!isAlive(id)) {
-      return;
+  T& addComponent(EntityId id, Args&&... args) {
+    if (!_entityManager.isAlive(id)) {
+      throw std::runtime_error("Cannot add component to dead entity");
     }
-    _componentManager.emplace<T>(id, std::forward<Args>(args)...);
+    if (hasComponent<T>(id)) {
+      throw std::runtime_error("Component already exists for this entity");
+    }
+    return _componentManager.emplace<T>(id, std::forward<Args>(args)...);
   }
 
   template <ComponentType T>
@@ -239,3 +252,26 @@ class World {
   std::unordered_map<TagSymbol, std::unordered_set<EntityId>> _tagToEntities;
   std::unordered_map<EntityId, std::unordered_set<TagSymbol>> _entityToTags;
 };
+
+//
+//  For the EntityRef API
+//
+template <typename T>
+T* EntityRef::get() const {
+  return world->getComponent<T>(id);
+}
+
+template <typename T, typename... Args>
+T& EntityRef::add(Args&&... args) {
+  return world->addComponent<T>(id, std::forward<Args>(args)...);
+}
+
+template <typename T>
+bool EntityRef::has() const {
+  return world->hasComponent<T>(id);
+}
+
+template <typename T>
+void EntityRef::remove() {
+  world->removeComponent<T>(id);
+}

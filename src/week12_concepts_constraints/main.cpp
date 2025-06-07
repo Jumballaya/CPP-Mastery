@@ -19,7 +19,7 @@ struct Velocity : public Component<Velocity> {
 
 class MovementSystem : public System {
  public:
-   void update(World& world, float dt) override {
+  void update(World& world, float dt) override {
     for (auto [id, pos, vel] : world.view<Position, Velocity>()) {
       pos->x += vel->dx * dt;
       pos->y += vel->dy * dt;
@@ -31,14 +31,12 @@ class MovementSystem : public System {
 void demo_1_simple_ecs() {
   World world;
 
-  // Create 10 test entities
   for (int i = 0; i < 10; ++i) {
     EntityId id = world.createEntity();
     world.addComponent<Position>(id, float(i), float(i));
     world.addComponent<Velocity>(id, 1.0f, 0.5f);
   }
 
-  // Register and run system
   world.registerSystem<MovementSystem>();
 
   for (int frame = 0; frame < 5; ++frame) {
@@ -50,6 +48,36 @@ void demo_1_simple_ecs() {
   }
 }
 
+void demo_2_tags_and_indexed() {
+  World world;
+
+  world.registerComponent<Position>();
+  world.registerComponent<Velocity>();
+  world.registerSystem<MovementSystem>();
+
+  for (int i = 0; i < 10; ++i) {
+    auto e = world.createEntity();  // Returns EntityId
+    world[e].add<Position>(float(i), float(i));
+    world[e].add<Velocity>(1.0f, 0.5f);
+
+    if (i % 2 == 0) {
+      world[e].addTag("enemy");
+    } else {
+      world[e].addTag("player");
+    }
+  }
+
+  for (int frame = 0; frame < 5; ++frame) {
+    std::cout << "Frame " << frame << ":\n";
+    world.update(1.0f);
+
+    for (auto [id, pos] : world.view<Position>()) {
+      std::string tag = world[id].hasTag("enemy") ? "enemy" : "player";
+      std::cout << "Entity " << id.index << " (" << tag << ") => (" << pos->x << ", " << pos->y << ")\n";
+    }
+  }
+}
+
 int main() {
-  demo_1_simple_ecs();
+  demo_2_tags_and_indexed();
 }

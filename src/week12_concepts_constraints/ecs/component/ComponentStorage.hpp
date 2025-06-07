@@ -65,7 +65,7 @@ class ComponentStorage : public IComponentStorage {
 
   void cloneComponent(EntityId from, EntityId to) override {
     if (!has(from)) return;
-    _components[to] = _components[from];
+    _components.try_emplace(to, _components.at(from));
   }
 
   void clear() override { _components.clear(); }
