@@ -1,6 +1,8 @@
+#include <future>
 #include <iostream>
 #include <mutex>
 #include <queue>
+#include <stdexcept>
 #include <thread>
 #include <utility>
 #include <vector>
@@ -147,6 +149,66 @@ void demo_4_thread_pool() {
   std::this_thread::sleep_for(std::chrono::seconds(2));  // let tasks run
 }
 
+void demo_4_futures() {
+  std::packaged_task<int()> step1([] {
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    throw std::runtime_error("Panic!!");
+    return 21;
+  });
+  std::future<int> f1 = step1.get_future();
+  std::thread t1(std::move(step1));
+
+  std::packaged_task<int()> step2([&f1] {
+    try {
+      int x = f1.get();
+      return x * 2;
+    } catch (const std::exception& ex) {
+      std::cout << "Caught exception from f1: " << ex.what() << std::endl;
+    }
+    return 0;
+  });
+  std::future<int> f2 = step2.get_future();
+  std::thread t2(std::move(step2));
+
+  std::packaged_task<int()> step3([&f2] {
+    try {
+      int x = f2.get();
+      return x + 1337;
+    } catch (const std::exception& ex) {
+      std::cout << "Caught exception from f2: " << ex.what() << std::endl;
+    }
+    return 0;
+  });
+  std::future<int> f3 = step3.get_future();
+  std::thread t3(std::move(step3));
+
+  std::cout << "Final result: " << f3.get() << std::endl;
+
+  t1.join();
+  t2.join();
+  t3.join();
+}
+
+void demo_5_thread_pool() {
+  ThreadPool pool(4);
+
+  auto f1 = pool.submit([] {
+    return 42;
+  });
+
+  auto f2 = pool.submit([] {
+    return std::string("hello");
+  });
+
+  auto f3 = pool.submit([] {
+    std::cout << "Task running!\n";
+  });
+
+  std::cout << "f1: " << f1.get() << "\n";
+  std::cout << "f2: " << f2.get() << "\n";
+  f3.get();
+}
+
 int main() {
-  demo_4_thread_pool();
+  demo_5_thread_pool();
 }
