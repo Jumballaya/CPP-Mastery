@@ -9,6 +9,7 @@
 
 #include "async/BlockingQueue.hpp"
 #include "async/ThreadPool.hpp"
+#include "http/HTTPServer.hpp"
 
 class Work {
  public:
@@ -209,6 +210,17 @@ void demo_5_thread_pool() {
   f3.get();
 }
 
+void demo_6_http_server() {
+  ThreadPool pool(4);
+  HTTPServer server(pool);
+  server.listen(8080, [] {
+    std::cout << "Listening on port 8080" << std::endl;
+  });
+
+  std::this_thread::sleep_until(std::chrono::system_clock::time_point::max());
+  server.stop();
+}
+
 int main() {
-  demo_5_thread_pool();
+  demo_6_http_server();
 }
