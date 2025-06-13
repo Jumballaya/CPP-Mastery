@@ -1,1 +1,3 @@
-add_executable(threads_async main.cpp)
+add_executable(threads_async
+  main.cpp
+)
