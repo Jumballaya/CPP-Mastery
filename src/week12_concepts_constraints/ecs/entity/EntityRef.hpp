@@ -5,7 +5,7 @@
 
 #include "EntityId.hpp"
 
-class World;  // ✅ forward declaration
+class World;
 
 class EntityRef {
  public:
