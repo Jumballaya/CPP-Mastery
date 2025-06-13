@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "async/BlockingQueue.hpp"
+#include "async/ThreadPool.hpp"
 
 class Work {
  public:
@@ -129,8 +130,23 @@ void demo_3_blocking_queue() {
 }
 
 void demo_4_thread_pool() {
+  ThreadPool pool(4);
+
+  std::mutex printMutex;
+
+  for (int i = 0; i < 10; ++i) {
+    pool.enqueue([i, &printMutex]() {
+      {
+        std::unique_lock lock(printMutex);
+        std::cout << "Task " << i << " is running on thread " << std::this_thread::get_id() << "\n";
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    });
+  }
+
+  std::this_thread::sleep_for(std::chrono::seconds(2));  // let tasks run
 }
 
 int main() {
-  demo_3_blocking_queue();
+  demo_4_thread_pool();
 }
