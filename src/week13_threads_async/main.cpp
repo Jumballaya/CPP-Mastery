@@ -10,6 +10,7 @@
 #include "async/BlockingQueue.hpp"
 #include "async/ThreadPool.hpp"
 #include "http/HTTPServer.hpp"
+#include "net/Command.hpp"
 
 class Work {
  public:
@@ -222,5 +223,15 @@ void demo_6_http_server() {
 }
 
 int main() {
-  demo_6_http_server();
+  int y = 10;
+
+  auto cmd = Command::parse("chat:send?str:from=patrick&str:text=hello&bool:admin=true&int:retries=3");
+
+  int x = 10;
+
+  std::string who = cmd.get<std::string>("from");  // "patrick"
+  int retries = cmd.get<int>("retries");           // 3
+  bool isAdmin = cmd.get<bool>("admin");           // true
+
+  std::cout << "Who: " << who << ", retries: " << retries << ", isAdmin?: " << (isAdmin ? "true" : "false") << std::endl;
 }
