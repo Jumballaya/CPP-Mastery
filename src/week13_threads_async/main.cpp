@@ -11,6 +11,8 @@
 #include "async/ThreadPool.hpp"
 #include "http/HTTPServer.hpp"
 #include "net/Command.hpp"
+#include "net/TcpGameClient.hpp"
+#include "net/TcpGameServer.hpp"
 
 class Work {
  public:
@@ -222,16 +224,39 @@ void demo_6_http_server() {
   server.stop();
 }
 
+void runClient() {
+  TcpGameClient client("127.0.0.1", 3000);
+
+  client.onMessage([](std::string_view msg) {
+    std::cout << "Server replied: " << msg << "\n";
+  });
+
+  if (!client.connect()) {
+    std::cerr << "Failed to connect to server.\n";
+    return;
+  }
+
+  client.send("chat:send?str:from=person&str:text=hello world\n");
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+}
+
+void demo_7_tcp_client_server() {
+  ThreadPool pool(4);
+  TcpGameServer server(pool);
+  server.route("chat:send", [](TcpClient& client, const Command& cmd) {
+    std::string from = cmd.get<std::string>("from");
+    std::string text = cmd.get<std::string>("text");
+    std::cout << from << ": " << text << "\n";
+    client.send("Received!\n");
+  });
+
+  server.listen(3000, [] {
+    std::cout << "Server listening on port 3000...\n";
+  });
+
+  runClient();
+}
+
 int main() {
-  int y = 10;
-
-  auto cmd = Command::parse("chat:send?str:from=patrick&str:text=hello&bool:admin=true&int:retries=3");
-
-  int x = 10;
-
-  std::string who = cmd.get<std::string>("from");  // "patrick"
-  int retries = cmd.get<int>("retries");           // 3
-  bool isAdmin = cmd.get<bool>("admin");           // true
-
-  std::cout << "Who: " << who << ", retries: " << retries << ", isAdmin?: " << (isAdmin ? "true" : "false") << std::endl;
+  demo_7_tcp_client_server();
 }
