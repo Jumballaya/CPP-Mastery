@@ -1,0 +1,1 @@
+add_executable(lock_free_queues main.cpp)
