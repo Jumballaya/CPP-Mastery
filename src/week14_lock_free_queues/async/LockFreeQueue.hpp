@@ -19,12 +19,30 @@ class LockFreeQueue {
       _buffer[i].sequence.store(i, std::memory_order_relaxed);
     }
   }
-  // ~LockFreeQueue();
+
+  ~LockFreeQueue() {
+    for (size_t i = 0; i < _capacity; ++i) {
+      Slot& slot = _buffer[i];
+      size_t seq = slot.sequence.load(std::memory_order_acquire);
+      if (seq == i + 1) {
+        slot.data_ptr()->~T();
+      }
+    }
+    delete[] _buffer;
+  }
 
   LockFreeQueue(const LockFreeQueue&) = delete;
   LockFreeQueue& operator=(const LockFreeQueue&) = delete;
 
+  void shutdown() {
+    _valid.store(false, std::memory_order_relaxed);
+  }
+
   bool try_enqueue(const T& item) {
+    if (!_valid.load(std::memory_order_relaxed)) {
+      return false;
+    }
+
     size_t tail = _tail.fetch_add(1, std::memory_order_relaxed);
     size_t index = tail % _capacity;
     Slot& slot = _buffer[index];
@@ -42,6 +60,10 @@ class LockFreeQueue {
   }
 
   bool try_dequeue(T& out) {
+    if (!_valid.load(std::memory_order_relaxed)) {
+      return false;
+    }
+
     size_t head = _head.fetch_add(1, std::memory_order_relaxed);
     size_t index = head % _capacity;
     Slot& slot = _buffer[index];
@@ -59,8 +81,11 @@ class LockFreeQueue {
     return true;
   }
 
-  // size_t capacity() const noexcept;
-  // size_t size_approx() const noexcept;
+  size_t capacity() const noexcept { return _capacity; }
+
+  size_t size_approx() const noexcept {
+    return _tail.load(std::memory_order_relaxed) - _head.load(std::memory_order_relaxed);
+  }
 
  private:
   struct Slot {
@@ -76,4 +101,5 @@ class LockFreeQueue {
   Slot* _buffer;
   alignas(64) std::atomic<size_t> _head;
   alignas(64) std::atomic<size_t> _tail;
+  std::atomic<bool> _valid{true};
 };
