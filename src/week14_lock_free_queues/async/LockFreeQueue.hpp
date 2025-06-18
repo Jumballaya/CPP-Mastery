@@ -19,16 +19,32 @@ class LockFreeQueue {
       _buffer[i].sequence.store(i, std::memory_order_relaxed);
     }
   }
-  ~LockFreeQueue();
+  // ~LockFreeQueue();
 
   LockFreeQueue(const LockFreeQueue&) = delete;
   LockFreeQueue& operator=(const LockFreeQueue&) = delete;
 
-  bool try_enqueue(const T& item);
-  bool try_dequeue(T& out);
+  bool try_enqueue(const T& item) {
+    size_t tail = _tail.fetch_add(1, std::memory_order_relaxed);
+    size_t index = tail % _capacity;
+    Slot& slot = _buffer[index];
 
-  size_t capacity() const noexcept;
-  size_t size_approx() const noexcept;
+    size_t seq = slot.sequence.load(std::memory_order_acquire);
+
+    // Slot is not ready yet
+    if (seq != tail) {
+      return false;
+    }
+
+    new (slot.data_ptr()) T(item);
+    slot.sequence.store(tail + 1, std::memory_order_release);
+    return true;
+  }
+
+  // bool try_dequeue(T& out);
+
+  // size_t capacity() const noexcept;
+  // size_t size_approx() const noexcept;
 
  private:
   struct Slot {
