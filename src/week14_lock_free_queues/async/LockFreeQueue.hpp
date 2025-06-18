@@ -41,7 +41,23 @@ class LockFreeQueue {
     return true;
   }
 
-  // bool try_dequeue(T& out);
+  bool try_dequeue(T& out) {
+    size_t head = _head.fetch_add(1, std::memory_order_relaxed);
+    size_t index = head % _capacity;
+    Slot& slot = _buffer[index];
+
+    size_t seq = slot.sequence.load(std::memory_order_acquire);
+
+    // Slot is not ready (needs to be read)
+    if (seq != head + 1) {
+      return false;
+    }
+
+    out = std::move(*slot.data_ptr());
+    slot.data_ptr()->~T();
+    slot.sequence.store(head + _capacity, std::memory_order_release);
+    return true;
+  }
 
   // size_t capacity() const noexcept;
   // size_t size_approx() const noexcept;
