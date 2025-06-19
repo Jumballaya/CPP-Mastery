@@ -35,49 +35,73 @@ class LockFreeQueue {
   LockFreeQueue& operator=(const LockFreeQueue&) = delete;
 
   void shutdown() {
-    _valid.store(false, std::memory_order_relaxed);
+    _valid.store(false, std::memory_order_acquire);
   }
 
-  bool try_enqueue(const T& item) {
-    if (!_valid.load(std::memory_order_relaxed)) {
-      return false;
+  bool try_enqueue(T&& item) {
+    if (!_valid.load(std::memory_order_acquire)) return false;
+
+    size_t tail;
+    Slot* slot;
+    size_t index;
+    size_t seq;
+
+    for (;;) {
+      tail = _tail.load(std::memory_order_relaxed);
+      index = tail % _capacity;
+      slot = &_buffer[index];
+
+      seq = slot->sequence.load(std::memory_order_acquire);
+      intptr_t diff = static_cast<intptr_t>(seq) - static_cast<intptr_t>(tail);
+
+      if (diff == 0) {
+        // Try to claim this slot
+        if (_tail.compare_exchange_weak(tail, tail + 1, std::memory_order_relaxed)) {
+          break;  // we own the slot
+        }
+      } else if (diff < 0) {
+        return false;  // full
+      } else {
+        std::this_thread::yield();  // spin
+      }
     }
 
-    size_t tail = _tail.fetch_add(1, std::memory_order_relaxed);
-    size_t index = tail % _capacity;
-    Slot& slot = _buffer[index];
-
-    size_t seq = slot.sequence.load(std::memory_order_acquire);
-
-    // Slot is not ready yet
-    if (seq != tail) {
-      return false;
-    }
-
-    new (slot.data_ptr()) T(item);
-    slot.sequence.store(tail + 1, std::memory_order_release);
+    new (slot->data_ptr()) T(std::move(item));
+    slot->sequence.store(tail + 1, std::memory_order_release);
     return true;
   }
 
   bool try_dequeue(T& out) {
-    if (!_valid.load(std::memory_order_relaxed)) {
-      return false;
+    if (!_valid.load(std::memory_order_acquire)) return false;
+
+    size_t head;
+    Slot* slot;
+    size_t index;
+    size_t seq;
+
+    for (;;) {
+      head = _head.load(std::memory_order_relaxed);
+      index = head % _capacity;
+      slot = &_buffer[index];
+
+      seq = slot->sequence.load(std::memory_order_acquire);
+      intptr_t diff = static_cast<intptr_t>(seq) - static_cast<intptr_t>(head + 1);
+
+      if (diff == 0) {
+        // Try to claim this slot
+        if (_head.compare_exchange_weak(head, head + 1, std::memory_order_relaxed)) {
+          break;  // we own the slot
+        }
+      } else if (diff < 0) {
+        return false;  // not ready yet
+      } else {
+        std::this_thread::yield();  // spin
+      }
     }
 
-    size_t head = _head.fetch_add(1, std::memory_order_relaxed);
-    size_t index = head % _capacity;
-    Slot& slot = _buffer[index];
-
-    size_t seq = slot.sequence.load(std::memory_order_acquire);
-
-    // Slot is not ready (needs to be read)
-    if (seq != head + 1) {
-      return false;
-    }
-
-    out = std::move(*slot.data_ptr());
-    slot.data_ptr()->~T();
-    slot.sequence.store(head + _capacity, std::memory_order_release);
+    out = std::move(*slot->data_ptr());
+    slot->data_ptr()->~T();
+    slot->sequence.store(head + _capacity, std::memory_order_release);
     return true;
   }
 
@@ -85,6 +109,10 @@ class LockFreeQueue {
 
   size_t size_approx() const noexcept {
     return _tail.load(std::memory_order_relaxed) - _head.load(std::memory_order_relaxed);
+  }
+
+  bool is_valid() const noexcept {
+    return _valid.load(std::memory_order_relaxed);
   }
 
  private:
