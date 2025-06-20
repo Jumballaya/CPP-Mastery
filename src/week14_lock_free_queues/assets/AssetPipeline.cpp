@@ -1,5 +1,6 @@
 #include "AssetPipeline.hpp"
 
+#include <algorithm>
 #include <iostream>
 
 AssetPipeline::AssetPipeline(AssetManager& manager, ThreadPool& threadPool)
@@ -36,6 +37,7 @@ void AssetPipeline::enqueueLoadJob(const std::filesystem::path& path) {
   const std::string canonicalPath = std::filesystem::weakly_canonical(path).string();
 
   if (ext == ".txt" || ext == ".json" || ext == ".glsl" || ext == ".lua") {
+    _submittedCount.fetch_add(1, std::memory_order_relaxed);
     _threadPool.enqueue([this, canonicalPath, path]() {
       try {
         auto handle = _manager.load<TextAsset>(canonicalPath, path);
@@ -60,9 +62,9 @@ size_t AssetPipeline::loadedFiles() const {
 }
 
 float AssetPipeline::progress() const {
-  size_t total = _totalCount.load();
-  if (total == 0) return 1.0f;
-  return static_cast<float>(loadedFiles()) / static_cast<float>(total);
+  size_t submitted = std::max(_submittedCount.load(), size_t(1));
+  size_t completed = _loadedCount.load();
+  return std::clamp(float(completed) / float(submitted), 0.0f, 1.0f);
 }
 
 AssetHandle AssetPipeline::getHandle(const std::string& path) const {

@@ -63,22 +63,23 @@ void demo_3_asset_pipeline(std::string& filesDir) {
   pipeline.scanDirectory(filesDir);
   pipeline.loadAllAsync();
 
-  const size_t total = pipeline.totalFiles();  // cache it up front
-
-  // Wait until at least one file is loaded
-  while (pipeline.loadedFiles() == 0) {
-    std::this_thread::yield();
-  }
-
-  // Show loading progress bar
+  float lastProgress = 0.00001;
   while (pipeline.loadedFiles() < pipeline.totalFiles()) {
     float p = pipeline.progress();
-    std::cout << "[loading] " << int(p * 100) << "% complete" << std::endl;
-    std::this_thread::sleep_for(std::chrono::microseconds(1));
+    if (p != lastProgress) {
+      lastProgress = p;
+      std::cout << "[loading] " << int(p * 100) << "% complete" << std::endl;
+    }
   }
-  std::cout << "[loading] 100% complete" << std::endl;
+  if (lastProgress < 1.0) {
+    std::cout << "[loading] 100% complete" << std::endl;
+  }
 
-  std::cout << "Asset load complete!" << std::endl;
+  AssetHandle handle = pipeline.getHandle(filesDir + "/script.lua");
+  TextAsset* asset = manager.get<TextAsset>(handle);
+
+  std::cout << "File: " << asset->filePath() << "\nContents:\n"
+            << asset->contents() << std::endl;
 }
 
 int main(int argc, char** argv) {

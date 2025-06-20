@@ -39,4 +39,5 @@ class AssetPipeline {
 
   std::atomic<size_t> _loadedCount{0};
   std::atomic<size_t> _totalCount{0};
+  std::atomic<size_t> _submittedCount{0};
 };
