@@ -1,9 +1,12 @@
 #include <atomic>
 #include <chrono>
+#include <filesystem>
 #include <iostream>
 #include <thread>
 #include <vector>
 
+#include "assets/AssetManager.hpp"
+#include "assets/AssetPipeline.hpp"
 #include "async/LockFreeQueue.hpp"
 #include "async/ThreadPool.hpp"
 
@@ -52,6 +55,36 @@ void demo_2_mpmc() {
   std::cout << "[demo_1_mpmc] Completed " << counter.load() << " tasks." << std::endl;
 }
 
-int main() {
-  demo_2_mpmc();
+void demo_3_asset_pipeline(std::string& filesDir) {
+  AssetManager manager;
+  ThreadPool pool(4, 512);
+  AssetPipeline pipeline(manager, pool);
+
+  pipeline.scanDirectory(filesDir);
+  pipeline.loadAllAsync();
+
+  const size_t total = pipeline.totalFiles();  // cache it up front
+
+  // Wait until at least one file is loaded
+  while (pipeline.loadedFiles() == 0) {
+    std::this_thread::yield();
+  }
+
+  // Show loading progress bar
+  while (pipeline.loadedFiles() < pipeline.totalFiles()) {
+    float p = pipeline.progress();
+    std::cout << "[loading] " << int(p * 100) << "% complete" << std::endl;
+    std::this_thread::sleep_for(std::chrono::microseconds(1));
+  }
+  std::cout << "[loading] 100% complete" << std::endl;
+
+  std::cout << "Asset load complete!" << std::endl;
+}
+
+int main(int argc, char** argv) {
+  std::filesystem::path exePath = std::filesystem::absolute(argv[0]);
+  std::filesystem::path exeDir = exePath.parent_path();
+  std::filesystem::path filesDir = exeDir / "files";
+  std::string dir = filesDir.string();
+  demo_3_asset_pipeline(dir);
 }

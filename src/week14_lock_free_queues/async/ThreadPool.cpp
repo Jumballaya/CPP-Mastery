@@ -12,16 +12,13 @@ ThreadPool::~ThreadPool() {
 }
 
 void ThreadPool::start(std::size_t count) {
-  std::cout << "[threadpool] started " << count << " threads\n";
   for (std::size_t i = 0; i < count; ++i) {
     _threads.emplace_back([this] {
       try {
         while (_queue.is_valid()) {
           Job job;
           if (_queue.try_dequeue(job)) {
-            std::cout << "[worker] got job\n";
             job();
-            std::cout << "[worker] finished job\n";
           } else {
             std::this_thread::yield();
           }

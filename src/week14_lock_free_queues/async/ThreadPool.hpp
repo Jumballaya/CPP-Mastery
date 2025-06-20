@@ -53,13 +53,8 @@ class ThreadPool {
     };
     job.data = static_cast<void*>(task);
 
-    int retries = 0;
     while (!_queue.try_enqueue(std::move(job))) {
-      ++retries;
       std::this_thread::yield();
-    }
-    if (retries > 0) {
-      std::cout << "[enqueue] took " << retries << " retries" << std::endl;
     }
   }
 
