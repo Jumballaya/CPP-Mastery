@@ -12,7 +12,7 @@ To transition into a professional game engine development role by mastering C++ 
 
 ## Current Focus
 
-I am currently focused on learning to use the `Expression Template` pattern as well as `SIMD`. I am currently writing some simple Math structs like `Vec3f`, `Quaternion` and `Mat4f`.
+I am currently focused on learning fibers and building a task graph system.
 
 ---
 
