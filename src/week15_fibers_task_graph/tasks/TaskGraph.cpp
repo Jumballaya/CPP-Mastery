@@ -12,9 +12,8 @@ void TaskGraph::addDependency(TaskId dependent, TaskId prerequisite) {
 void TaskGraph::execute() {
   for (auto& [id, node] : _tasks) {
     if (node.dependencyCount.load(std::memory_order_relaxed) == 0) {
-      Job job = node.job;
-      _threadPool.enqueue([this, id, job]() {
-        job();
+      _threadPool.enqueue([this, id]() {
+        _tasks.at(id).job();
         onTaskComplete(id);
       });
     }
@@ -29,10 +28,8 @@ void TaskGraph::onTaskComplete(TaskId id) {
   auto& node = _tasks.at(id);
 
   for (TaskId dependentId : node.dependents) {
-    auto& dependentNode = _tasks.at(dependentId);
-    Job job = dependentNode.job;
-    _threadPool.enqueue([this, dependentId, job]() {
-      job();
+    _threadPool.enqueue([this, dependentId]() {
+      _tasks.at(dependentId).job();
       onTaskComplete(dependentId);
     });
   }

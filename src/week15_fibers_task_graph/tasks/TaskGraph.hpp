@@ -25,7 +25,7 @@ class TaskGraph {
 
  private:
   struct TaskNode {
-    Job job;
+    Job<> job;
     std::atomic<int> dependencyCount{0};
     std::vector<TaskId> dependents;
   };
@@ -50,7 +50,11 @@ TaskId TaskGraph::addTask(Fn&& func) {
   TaskNode node;
   node.job = std::move(job);
 
-  _tasks.try_emplace(taskId, std::move(node.job), node.dependencyCount.load(), std::move(node.dependents));
+  _tasks.try_emplace(
+      taskId,
+      std::move(node.job),
+      node.dependencyCount.load(),
+      std::move(node.dependents));
 
   return taskId;
 }
