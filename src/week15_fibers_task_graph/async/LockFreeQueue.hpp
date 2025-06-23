@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <memory>
 #include <new>
+#include <thread>
 #include <type_traits>
 
 template <typename T>
