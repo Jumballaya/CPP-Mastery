@@ -19,6 +19,7 @@ void ThreadPool::start(std::size_t count) {
           Job job;
           if (_queue.try_dequeue(job)) {
             job();
+            _activeJobs.fetch_sub(1, std::memory_order_release);
           } else {
             std::this_thread::yield();
           }

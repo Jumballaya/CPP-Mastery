@@ -10,10 +10,12 @@ template <size_t MaxSize = 64>
 struct Job {
   using FuncPtr = void (*)(void*);
   using DestroyFuncPtr = void (*)(void*);
+  using MoveFuncPtr = void (*)(void* src, void* dst);
 
   alignas(std::max_align_t) char storage[MaxSize];
   FuncPtr func = nullptr;
   DestroyFuncPtr destroyFunc = nullptr;
+  MoveFuncPtr moveFunc = nullptr;
 
   Job() = default;
   ~Job() {
@@ -25,28 +27,27 @@ struct Job {
   Job(Job&& other) noexcept {
     func = other.func;
     destroyFunc = other.destroyFunc;
+    moveFunc = other.moveFunc;
 
-    for (size_t i = 0; i < MaxSize; ++i) {
-      storage[i] = other.storage[i];
+    if (func && moveFunc) {
+      moveFunc(other.storage, storage);
+      other.cleanup();
     }
-
-    other.func = nullptr;
-    other.destroyFunc = nullptr;
   }
 
   Job& operator=(Job&& other) noexcept {
-    if (this == &other) {
-      return *this;
-    }
+    if (this == &other) return *this;
 
     cleanup();
+
     func = other.func;
     destroyFunc = other.destroyFunc;
-    for (size_t i = 0; i < MaxSize; ++i) {
-      storage[i] = other.storage[i];
+    moveFunc = other.moveFunc;
+
+    if (func && moveFunc) {
+      moveFunc(other.storage, storage);
+      other.cleanup();
     }
-    other.func = nullptr;
-    other.destroyFunc = nullptr;
 
     return *this;
   }
@@ -63,6 +64,11 @@ struct Job {
 
     func = [](void* ptr) { (*reinterpret_cast<LambdaType*>(ptr))(); };
     destroyFunc = [](void* ptr) { reinterpret_cast<LambdaType*>(ptr)->~LambdaType(); };
+    moveFunc = [](void* src, void* dst) {
+      auto* srcObj = reinterpret_cast<LambdaType*>(src);
+      new (dst) LambdaType(std::move(*srcObj));
+      srcObj->~LambdaType();
+    };
 
     new (storage) Fn(std::forward<Fn>(fn));
   }

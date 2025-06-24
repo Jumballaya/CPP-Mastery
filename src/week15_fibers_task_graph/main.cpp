@@ -1,6 +1,7 @@
 #include <chrono>
 #include <cstdint>
 #include <iostream>
+#include <memory>
 #include <thread>
 
 #include "tasks/TaskGraph.hpp"
@@ -29,59 +30,70 @@ void demo_1_task_graph_basic() {
 
 struct Message {
   uint32_t id;
+  uint32_t gen;
+  uint32_t copy = 0;
   std::string msg;
 
   Message() = default;
 
   ~Message() {
-    std::cout << "Message: " << id << " destroyed" << std::endl;
+    std::cout << "Message [destroyed]: " << *this << std::endl;
   }
 
   Message(const Message& other) {
-    id = other.id + 1;
+    id = other.id;
     msg = other.msg;
-    std::cout << "Message copied [ctor]: " << other.id << std::endl;
+    gen = other.gen;
+    copy = other.copy + 1;
+    std::cout << "Message [copied ctor]: " << other << std::endl;
   }
 
   Message& operator=(const Message& other) {
     if (this == &other) return *this;
 
-    id = other.id + 1;
+    id = other.id;
     msg = other.msg;
-    std::cout << "Message copied [assign]: " << other.id << std::endl;
+    copy = other.copy + 1;
+    std::cout << "Message [copied assign]: " << other << std::endl;
 
     return *this;
   }
 
   friend std::ostream& operator<<(std::ostream& os, const Message& message) {
-    os << message.msg << ": " << message.id;
+    os << message.msg << " | ID: " << message.id << " | Gen: " << message.gen << " | Copies: " << message.copy;
     return os;
   }
 };
 
 void demo_2_task_graph_scope_data() {
-  int count = 0;
-  while (true) {
-    if (count > 2) break;
-
+  int id = 0;
+  for (int i = 0; i < 5; ++i) {
     TaskGraph graph;
 
-    Message message;
-    message.id = 0;
-    message.msg = "From Main Thread";
+    auto messageA = std::make_shared<Message>();
+    messageA->id = id++;
+    messageA->gen = i;
+    messageA->msg = "Task A running";
 
-    TaskId a = graph.addTask([message] { std::cout << "Task A running: " << message << std::endl; });
-    TaskId b = graph.addTask([message] { std::cout << "Task B running: " << message << std::endl; });
-    TaskId c = graph.addTask([message] { std::cout << "Task C running: " << message << std::endl; });
+    auto messageB = std::make_shared<Message>();
+    messageB->id = id++;
+    messageB->gen = i;
+    messageB->msg = "Task B running";
+
+    auto messageC = std::make_shared<Message>();
+    messageC->id = id++;
+    messageC->gen = i;
+    messageC->msg = "Task C running";
+
+    TaskId a = graph.addTask([messageA] { std::cout << *messageA << std::endl; });
+    TaskId b = graph.addTask([messageB] { std::cout << *messageB << std::endl; });
+    TaskId c = graph.addTask([messageC] { std::cout << *messageC << std::endl; });
 
     graph.addDependency(b, a);
     graph.addDependency(c, b);
 
     graph.execute();
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-    count++;
+    graph.waitForCompletion();
   }
 }
 

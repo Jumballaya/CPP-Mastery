@@ -23,6 +23,10 @@ class TaskGraph {
   void addDependency(TaskId dependent, TaskId prerequisite);
   void execute();
 
+  void waitForCompletion() {
+    _threadPool.waitForIdle();
+  }
+
  private:
   struct TaskNode {
     Job<> job;
