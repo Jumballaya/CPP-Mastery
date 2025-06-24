@@ -29,8 +29,7 @@ class ThreadPool {
     }
   }
 
-  template <size_t MaxSize = 64>
-  void enqueue(Job<MaxSize>&& job) {
+  void enqueue(Job<>&& job) {
     _activeJobs.fetch_add(1, std::memory_order_relaxed);
     while (!_queue.try_enqueue(std::move(job))) {
       std::this_thread::yield();

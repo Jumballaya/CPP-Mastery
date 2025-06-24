@@ -1,84 +1,77 @@
 #pragma once
 
 #include <cassert>
-#include <cstddef>
-#include <new>
 #include <type_traits>
 #include <utility>
 
-template <size_t MaxSize = 64>
+template <size_t MaxSize = 128>
 struct Job {
-  using FuncPtr = void (*)(void*);
-  using DestroyFuncPtr = void (*)(void*);
-  using MoveFuncPtr = void (*)(void* src, void* dst);
+ private:
+  struct Base {
+    virtual ~Base() = default;
+    virtual void execute() = 0;
+    virtual void moveTo(void* dest) = 0;
+  };
+
+  template <typename Fn>
+  struct Model : Base {
+    Fn fn;
+
+    explicit Model(Fn&& f) : fn(std::move(f)) {}
+    void execute() override { fn(); }
+    void moveTo(void* dest) override {
+      new (dest) Model<Fn>(std::move(fn));
+    }
+  };
 
   alignas(std::max_align_t) char storage[MaxSize];
-  FuncPtr func = nullptr;
-  DestroyFuncPtr destroyFunc = nullptr;
-  MoveFuncPtr moveFunc = nullptr;
+  Base* base = nullptr;
 
+ public:
   Job() = default;
-  ~Job() {
-    cleanup();
-  }
+  ~Job() { reset(); }
+
   Job(const Job&) = delete;
   Job& operator=(const Job&) = delete;
 
   Job(Job&& other) noexcept {
-    func = other.func;
-    destroyFunc = other.destroyFunc;
-    moveFunc = other.moveFunc;
-
-    if (func && moveFunc) {
-      moveFunc(other.storage, storage);
-      other.cleanup();
+    if (other.base) {
+      other.base->moveTo(storage);
+      base = reinterpret_cast<Base*>(storage);
+      other.base = nullptr;
     }
   }
 
   Job& operator=(Job&& other) noexcept {
-    if (this == &other) return *this;
-
-    cleanup();
-
-    func = other.func;
-    destroyFunc = other.destroyFunc;
-    moveFunc = other.moveFunc;
-
-    if (func && moveFunc) {
-      moveFunc(other.storage, storage);
-      other.cleanup();
+    if (this != &other) {
+      reset();
+      if (other.base) {
+        other.base->moveTo(storage);
+        base = reinterpret_cast<Base*>(storage);
+        other.base = nullptr;
+      }
     }
-
     return *this;
-  }
-
-  void operator()() const {
-    assert(func && "Job function pointer is null");
-    func((void*)storage);
   }
 
   template <typename Fn>
   void set(Fn&& fn) {
-    static_assert(sizeof(Fn) <= MaxSize, "Lambda is too large for job storage");
-    using LambdaType = std::decay_t<Fn>;
-
-    func = [](void* ptr) { (*reinterpret_cast<LambdaType*>(ptr))(); };
-    destroyFunc = [](void* ptr) { reinterpret_cast<LambdaType*>(ptr)->~LambdaType(); };
-    moveFunc = [](void* src, void* dst) {
-      auto* srcObj = reinterpret_cast<LambdaType*>(src);
-      new (dst) LambdaType(std::move(*srcObj));
-      srcObj->~LambdaType();
-    };
-
-    new (storage) Fn(std::forward<Fn>(fn));
+    static_assert(sizeof(Model<Fn>) <= MaxSize, "Job is too large for storage");
+    new (storage) Model<Fn>(std::forward<Fn>(fn));
+    base = reinterpret_cast<Base*>(storage);
   }
 
- private:
-  void cleanup() {
-    if (destroyFunc) {
-      destroyFunc((void*)storage);
-      destroyFunc = nullptr;
+  void operator()() {
+    assert(base && "Job not set");
+    base->execute();
+  }
+
+  void reset() {
+    if (base) {
+      base->~Base();
+      base = nullptr;
     }
-    func = nullptr;
   }
+
+  bool valid() const { return base != nullptr; }
 };

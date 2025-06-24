@@ -70,24 +70,24 @@ void demo_2_task_graph_scope_data() {
   for (int i = 0; i < 5; ++i) {
     TaskGraph graph;
 
-    auto messageA = std::make_shared<Message>();
-    messageA->id = id++;
-    messageA->gen = i;
-    messageA->msg = "Task A running";
+    Message messageA;
+    messageA.id = id++;
+    messageA.gen = i;
+    messageA.msg = "Task A running";
 
-    auto messageB = std::make_shared<Message>();
-    messageB->id = id++;
-    messageB->gen = i;
-    messageB->msg = "Task B running";
+    Message messageB;
+    messageB.id = id++;
+    messageB.gen = i;
+    messageB.msg = "Task B running";
 
-    auto messageC = std::make_shared<Message>();
-    messageC->id = id++;
-    messageC->gen = i;
-    messageC->msg = "Task C running";
+    Message messageC;
+    messageC.id = id++;
+    messageC.gen = i;
+    messageC.msg = "Task C running";
 
-    TaskId a = graph.addTask([messageA] { std::cout << *messageA << std::endl; });
-    TaskId b = graph.addTask([messageB] { std::cout << *messageB << std::endl; });
-    TaskId c = graph.addTask([messageC] { std::cout << *messageC << std::endl; });
+    TaskId a = graph.addTask([&messageA] { std::cout << messageA << std::endl; });
+    TaskId b = graph.addTask([&messageB] { std::cout << messageB << std::endl; });
+    TaskId c = graph.addTask([&messageC] { std::cout << messageC << std::endl; });
 
     graph.addDependency(b, a);
     graph.addDependency(c, b);
