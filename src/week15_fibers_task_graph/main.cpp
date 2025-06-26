@@ -67,8 +67,10 @@ struct Message {
 
 void demo_2_task_graph_scope_data() {
   int id = 0;
+  unsigned int threadCount = std::max(1u, std::thread::hardware_concurrency() / 2);
+
   for (int i = 0; i < 5; ++i) {
-    TaskGraph graph;
+    TaskGraph graph(threadCount);
 
     Message messageA;
     messageA.id = id++;
@@ -95,6 +97,8 @@ void demo_2_task_graph_scope_data() {
     graph.execute();
     graph.waitForCompletion();
   }
+
+  std::cout << "Thread Count: " << threadCount << std::endl;
 }
 
 int main() {
