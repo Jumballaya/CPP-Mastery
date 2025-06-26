@@ -4,9 +4,13 @@
 #include <memory>
 #include <thread>
 
+#include "tasks/JobSystem.hpp"
 #include "tasks/TaskGraph.hpp"
 
 void demo_1_task_graph_basic() {
+  unsigned int threadCount = std::max(1u, std::thread::hardware_concurrency() / 2);
+  JobSystem job((size_t)threadCount);
+
   int count = 0;
   while (true) {
     if (count > 10) break;
@@ -20,10 +24,7 @@ void demo_1_task_graph_basic() {
     graph.addDependency(b, a);
     graph.addDependency(c, b);
 
-    graph.execute();
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
+    job.execute(graph);
     count++;
   }
 }
@@ -68,9 +69,10 @@ struct Message {
 void demo_2_task_graph_scope_data() {
   int id = 0;
   unsigned int threadCount = std::max(1u, std::thread::hardware_concurrency() / 2);
+  JobSystem job(threadCount);
 
   for (int i = 0; i < 5; ++i) {
-    TaskGraph graph(threadCount);
+    TaskGraph graph;
 
     Message messageA;
     messageA.id = id++;
@@ -94,8 +96,8 @@ void demo_2_task_graph_scope_data() {
     graph.addDependency(b, a);
     graph.addDependency(c, b);
 
-    graph.execute();
-    graph.waitForCompletion();
+    job.execute(graph);
+    job.waitForCompletion();
   }
 
   std::cout << "Thread Count: " << threadCount << std::endl;
