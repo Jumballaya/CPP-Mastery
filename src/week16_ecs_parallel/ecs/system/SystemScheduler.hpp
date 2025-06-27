@@ -2,9 +2,13 @@
 
 #include <algorithm>
 #include <memory>
+#include <typeindex>
+#include <unordered_map>
 #include <vector>
 
 #include "System.hpp"
+#include "SystemId.hpp"
+#include "SystemTraits.hpp"
 
 class World;
 
@@ -18,31 +22,43 @@ class SystemScheduler {
   SystemScheduler& operator=(SystemScheduler&&) noexcept = default;
 
   template <typename T, typename... Args>
-  void registerSystem(Args&&... args) {
-    static_assert(std::is_base_of_v<System, T>, "T must derive from System");
-    _systems.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
-  }
+  void registerSystem(Args&&... args);
 
-  void update(World& world, float dt) {
-    for (auto& system : _systems) {
-      system->update(world, dt);
-    }
-  }
-
-  void clear() {
-    _systems.clear();
-  }
-
-  void removeSystem(System* system) {
-    auto it = std::remove_if(
-        _systems.begin(),
-        _systems.end(),
-        [system](const std::unique_ptr<System>& s) {
-          return s.get() == system;
-        });
-    _systems.erase(it, _systems.end());
-  }
+  void update(World& world, float dt);
+  void clear();
+  void removeSystem(System* system);
 
  private:
-  std::vector<std::unique_ptr<System>> _systems;
+  std::vector<std::shared_ptr<System>> _systems;
+  std::unordered_map<std::type_index, SystemId> _tagProviders;
+  std::unordered_map<SystemId, std::vector<std::type_index>> _systemReads;
+  std::unordered_map<SystemId, std::vector<std::type_index>> _systemWrites;
 };
+
+template <typename T, typename... Args>
+void SystemScheduler::registerSystem(Args&&... args) {
+  static_assert(std::is_base_of_v<System, T>, "T must derive from System");
+
+  auto system = std::make_shared<T>(std::forward<Args>(args)...);
+  SystemId id = GetSystemId<T>();
+
+  // Provides tags
+  TypeListForEach<typename SystemTraits<T>::Provides>::apply(
+      [&]<typename Tag>() {
+        _tagProviders[std::type_index(typeid(Tag))] = id;
+      });
+
+  // Reads tags
+  TypeListForEach<typename SystemTraits<T>::Reads>::apply(
+      [&]<typename Component>() {
+        _systemReads[id].push_back(std::type_index(typeid(Component)));
+      });
+
+  // Writes tags
+  TypeListForEach<typename SystemTraits<T>::Writes>::apply(
+      [&]<typename Component>() {
+        _systemWrites[id].push_back(std::type_index(typeid(Component)));
+      });
+
+  _systems.emplace_back(std::move(system));
+}
