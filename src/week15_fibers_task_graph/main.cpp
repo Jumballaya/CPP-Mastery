@@ -14,7 +14,6 @@ void demo_1_task_graph_basic() {
   int count = 0;
   while (true) {
     if (count > 10) break;
-
     TaskGraph graph;
 
     TaskId a = graph.addTask([] { std::cout << "Task A running" << std::endl; });
@@ -24,7 +23,10 @@ void demo_1_task_graph_basic() {
     graph.addDependency(b, a);
     graph.addDependency(c, b);
 
+    job.beginFrame();
     job.execute(graph);
+    job.endFrame();
+
     count++;
   }
 }
@@ -96,8 +98,9 @@ void demo_2_task_graph_scope_data() {
     graph.addDependency(b, a);
     graph.addDependency(c, b);
 
+    job.beginFrame();
     job.execute(graph);
-    job.waitForCompletion();
+    job.endFrame();
   }
 
   std::cout << "Thread Count: " << threadCount << std::endl;

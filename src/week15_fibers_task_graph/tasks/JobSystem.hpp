@@ -21,6 +21,9 @@ class JobSystem {
   void submit(Job<>&& job);
   void waitForCompletion();
 
+  void beginFrame();
+  void endFrame();
+
  private:
   ThreadPool _threadPool;
 };

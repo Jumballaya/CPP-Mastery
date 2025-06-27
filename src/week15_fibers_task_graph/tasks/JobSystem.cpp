@@ -22,3 +22,13 @@ void JobSystem::submit(Job<>&& job) {
 void JobSystem::waitForCompletion() {
   _threadPool.waitForIdle();
 }
+
+void JobSystem::beginFrame() {
+  // eventually this is for frame allocators, and any top of the
+  // frame stuff and for any frame-local stuff
+}
+
+void JobSystem::endFrame() {
+  waitForCompletion();
+  // eventually for flushing any frame-local stuff
+}
