@@ -106,6 +106,69 @@ void demo_2_task_graph_scope_data() {
   std::cout << "Thread Count: " << threadCount << std::endl;
 }
 
+void demo_3_multi_graphs_per_frame() {
+  int id = 0;
+  unsigned int threadCount = std::max(1u, std::thread::hardware_concurrency() / 2);
+  JobSystem job(threadCount);
+
+  for (int i = 0; i < 5; ++i) {
+    std::cout << "\n==== Frame " << i << " ====\n";
+
+    job.beginFrame();
+
+    // Graph 1
+    TaskGraph graph1;
+
+    Message messageA;
+    messageA.id = id++;
+    messageA.gen = i;
+    messageA.msg = "Graph 1 - Task A";
+
+    Message messageB;
+    messageB.id = id++;
+    messageB.gen = i;
+    messageB.msg = "Graph 1 - Task B";
+
+    Message messageC;
+    messageC.id = id++;
+    messageC.gen = i;
+    messageC.msg = "Graph 1 - Task C";
+
+    TaskId a = graph1.addTask([&messageA] { std::cout << messageA << std::endl; });
+    TaskId b = graph1.addTask([&messageB] { std::cout << messageB << std::endl; });
+    TaskId c = graph1.addTask([&messageC] { std::cout << messageC << std::endl; });
+
+    graph1.addDependency(b, a);
+    graph1.addDependency(c, b);
+
+    // Graph 2
+    TaskGraph graph2;
+
+    Message messageD;
+    messageD.id = id++;
+    messageD.gen = i;
+    messageD.msg = "Graph 2 - Task D";
+
+    Message messageE;
+    messageE.id = id++;
+    messageE.gen = i;
+    messageE.msg = "Graph 2 - Task E";
+
+    TaskId d = graph2.addTask([&messageD] { std::cout << messageD << std::endl; });
+    TaskId e = graph2.addTask([&messageE] { std::cout << messageE << std::endl; });
+
+    graph2.addDependency(e, d);
+
+    // Submit both graphs to the same frame
+    job.execute(graph1);
+    job.execute(graph2);
+
+    job.endFrame();  // Wait for both graphs to complete
+  }
+
+  std::cout << "Thread Count: " << threadCount << std::endl;
+}
+
 int main() {
-  demo_2_task_graph_scope_data();
+  demo_3_multi_graphs_per_frame();
 }
