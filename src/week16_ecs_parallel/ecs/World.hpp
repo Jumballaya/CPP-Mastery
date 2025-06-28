@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "../tasks/TaskGraph.hpp"
 #include "View.hpp"
 #include "component/ComponentConcepts.hpp"
 #include "component/ComponentManager.hpp"
@@ -31,6 +32,10 @@ class World {
 
   EntityRef operator[](EntityId id) {
     return EntityRef{id, this};
+  }
+
+  void buildExecutionGraph(TaskGraph& graph, float dt) {
+    _systemScheduler.buildTaskGraph(graph, *this, dt);
   }
 
   void update(float dt) {
