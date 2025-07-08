@@ -1,0 +1,1 @@
+add_executable(manual_memory main.cpp)
