@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <cstddef>
 #include <span>
 
@@ -31,4 +32,15 @@ class FrameArena {
 
 template <typename T>
 T* FrameArena::allocate(size_t count = 1) {
+  static_assert(!std::is_abstract_v<T>, "FrameArena only supports POD-like types.");
+  static_assert(std::is_trivially_destructible_v<T>, "FrameArena only supports POD-like types.");
+  assert(count > 0);
+  size_t totalSize = sizeof(T) * count;
+  size_t alignment = alignof(T);
+  void* raw = allocateRaw(totalSize, alignment);
+
+  if (!raw) {
+    return nullptr;
+  }
+  return reinterpret_cast<T*>(raw);
 }
