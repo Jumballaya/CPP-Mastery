@@ -10,7 +10,7 @@ FrameArena::FrameArena(std::span<std::byte> backing)
       _ptr(_start),
       _size(backing.size()) {}
 
-void* FrameArena::allocateRaw(size_t bytes, size_t alignment = alignof(std::max_align_t)) {
+void* FrameArena::allocateRaw(size_t bytes, size_t alignment) {
   assert(bytes > 0);
   assert((alignment & (alignment - 1)) == 0);  // alignment is a power of 2
   size_t offset = reinterpret_cast<size_t>(_ptr);

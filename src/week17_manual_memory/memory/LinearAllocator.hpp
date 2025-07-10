@@ -33,5 +33,5 @@ class LinearAllocator {
 
 template <typename T>
 T* LinearAllocator::allocate(size_t count) {
-  static_assert(std::is_trivially_destructible_v<T>)
+  static_assert(std::is_trivially_destructible_v<T>);
 }

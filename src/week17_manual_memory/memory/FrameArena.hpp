@@ -31,7 +31,7 @@ class FrameArena {
 };
 
 template <typename T>
-T* FrameArena::allocate(size_t count = 1) {
+T* FrameArena::allocate(size_t count) {
   static_assert(!std::is_abstract_v<T>, "FrameArena only supports POD-like types.");
   static_assert(std::is_trivially_destructible_v<T>, "FrameArena only supports POD-like types.");
   assert(count > 0);
