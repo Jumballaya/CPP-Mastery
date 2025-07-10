@@ -6,8 +6,9 @@
 
 class FrameArena {
  public:
-  FrameArena(void* buffer, size_t size);
-  FrameArena(std::span<std::byte> backing);
+  explicit FrameArena(size_t size);
+  explicit FrameArena(void* buffer, size_t size);
+  explicit FrameArena(std::span<std::byte> backing);
   ~FrameArena() = default;
 
   FrameArena(const FrameArena&) = delete;

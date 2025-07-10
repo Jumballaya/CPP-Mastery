@@ -1,5 +1,10 @@
 #include "FrameArena.hpp"
 
+FrameArena::FrameArena(size_t size)
+    : _start(new std::byte[size]), _ptr(_start), _size(size) {
+  assert((size & (size - 1)) == 0);  // size is a power of 2
+}
+
 FrameArena::FrameArena(void* buffer, size_t size)
     : _start(reinterpret_cast<std::byte*>(buffer)),
       _ptr(_start),
