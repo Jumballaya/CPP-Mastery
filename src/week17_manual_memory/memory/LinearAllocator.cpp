@@ -16,7 +16,7 @@ LinearAllocator::~LinearAllocator() {
   }
 }
 
-void* LinearAllocator::allocateRaw(size_t bytes, size_t alignment = alignof(std::max_align_t)) {
+void* LinearAllocator::allocateRaw(size_t bytes, size_t alignment) {
   assert(bytes > 0);
   assert((alignment & (alignment - 1)) == 0);  // power of two alignment check
 
