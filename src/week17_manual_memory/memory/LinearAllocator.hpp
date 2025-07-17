@@ -33,5 +33,12 @@ class LinearAllocator {
 
 template <typename T>
 T* LinearAllocator::allocate(size_t count) {
-  static_assert(std::is_trivially_destructible_v<T>);
+  static_assert(std::is_trivially_destructible_v<T>, "LinearAllocator only supports POD-like types.");
+  assert(count > 0);
+
+  size_t totalSize = sizeof(T) * count;
+  size_t alignment = alignof(T);
+
+  void* raw = allocateRaw(totalSize, alignment);
+  return reinterpret_cast<T*>(raw);
 }
