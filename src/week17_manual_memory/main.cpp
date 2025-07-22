@@ -4,10 +4,6 @@
 #include "memory/LinearAllocator.hpp"
 #include "memory/PoolAllocator.hpp"
 
-//
-// @TODO: TaggedAllocator, FallbackAllocator
-//
-
 void demo_1_simple_frame_arena() {
   struct Vec3 {
     float x;
