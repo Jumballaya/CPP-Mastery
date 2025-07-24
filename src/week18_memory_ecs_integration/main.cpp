@@ -1,5 +1,3 @@
-#include <cstdint>
-#include <functional>
 #include <iostream>
 
 int main() {
